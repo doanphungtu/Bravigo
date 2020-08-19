@@ -28,7 +28,7 @@ const images = {
   location_start: require('../Images/App/start.png'),
   location_end: require('../Images/App/end.png'),
   location_car: require('../Images/App/car_location.png'),
-  car: require('../Images/App/car.png'),
+  car: require('../Images/App/car.jpg'),
   car_slider:require('../Images/App/car_slider.png'),
   stop:require('../Images/App/stop.png'),
 }

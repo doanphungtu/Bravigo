@@ -73,6 +73,7 @@ class HomeScreen extends Component {
     this.marker_place_stop = React.createRef();
     this.bs1 = React.createRef();
     this.bs2 = React.createRef();
+    this.marker_car = React.createRef();
     this.state = {
       name_place: '',
       message: '',
@@ -101,6 +102,7 @@ class HomeScreen extends Component {
       latitude_car: 0,
       longitude_car: 0,
       interval: "",
+      car_rotation: 0
     }
   }
 
@@ -339,7 +341,11 @@ class HomeScreen extends Component {
       <View style={{ height: 54 }}></View>
     </View>
   )
-
+  
+  getlength(number) {
+    return number.toString().length;
+  }
+  
   renderHeaderHistory = () => (
     <View
       style={styles.viewheaderInnerHistory}
@@ -687,14 +693,18 @@ class HomeScreen extends Component {
   show_car = (data) => {
     let interval = setInterval(async () => {
       await this.setState({ interval });
-      if (!this.state.running) {
+      if (!this.state.running || this.state.valueSlider == data.length - 1) {
         clearInterval(this.state.interval);
       }
       await this.setState({
-        latitude_car: Number(data[this.state.valueSlider].latitude),
-        longitude_car: Number(data[this.state.valueSlider].longitude),
-        valueSlider: this.state.valueSlider == data.length - 1 ? 0 : this.state.valueSlider + 1,
-      })
+        valueSlider: this.state.valueSlider + 1,
+        car_rotation:data[this.state.valueSlider].rotation
+      });
+      const newCoordinate = {
+        latitude: Number(data[this.state.valueSlider].latitude),
+        longitude: Number(data[this.state.valueSlider].longitude)
+      };
+      this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 500);
     }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 1000 : 500)
   }
 
@@ -753,14 +763,16 @@ class HomeScreen extends Component {
               {
                 this.state.tab === 1 ?
                   (
-                    <Marker
+                    <Marker.Animated
+                      ref={(ref) => { this.marker_car = ref }}
                       coordinate={{
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
+                      style={{ transform: [{ rotate: this.state.car_rotation.toString()+'deg' }] }}
                     >
-                      <Image source={Images.car} style={{ height: 40, width: 40 }} />
-                    </Marker>
+                      <Image source={Images.car} style={{ height: 45, width: 45 }} />
+                    </Marker.Animated>
                   )
                   : null
               }

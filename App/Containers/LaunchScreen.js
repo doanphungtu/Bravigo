@@ -17,12 +17,10 @@ export default class LaunchScreen extends Component {
       valueSlider: 0,
       latitude_car: 0,
       longitude_car: 0,
-      coordinate: new AnimatedRegion({
+      coordinate: {
         latitude: 21.054910,
-        longitude: 105.731700,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1
-      })
+        longitude: 105.731700
+      }
     },
       this.marker = React.createRef();
   }
@@ -57,11 +55,11 @@ export default class LaunchScreen extends Component {
     const data = [
       { latitude: "21.055186", longitude: "105.731547" },
       { latitude: "21.058711", longitude: "105.726393" },
-      // { latitude: "21.062796", longitude: "105.720613" },
-      // { latitude: "21.064638", longitude: "105.717435" },
-      // { latitude: "21.064357", longitude: "105.715833" },
-      // { latitude: "21.063446", longitude: "105.716305" },
-      // { latitude: "21.061915", longitude: "105.716155" }
+      { latitude: "21.062796", longitude: "105.720613" },
+      { latitude: "21.064638", longitude: "105.717435" },
+      { latitude: "21.064357", longitude: "105.715833" },
+      { latitude: "21.063446", longitude: "105.716305" },
+      { latitude: "21.061915", longitude: "105.716155" }
     ]
     this.show_car(data);
   }
@@ -70,13 +68,10 @@ export default class LaunchScreen extends Component {
     if (data.length < 3) {
       this.getDirections(data[0], data[1])
         .then(coords => {
-          this.setState({ coords });
           let interval = setInterval(async () => {
             if (this.state.valueSlider == coords.length)
               clearInterval(interval);
             await this.setState({
-              // latitude_car: Number(coords[this.state.valueSlider].latitude),
-              // longitude_car: Number(coords[this.state.valueSlider].longitude),
               valueSlider: this.state.valueSlider == coords.length - 1 ? 0 : this.state.valueSlider + 1,
             })
             const newCoordinate = {
@@ -90,20 +85,22 @@ export default class LaunchScreen extends Component {
           console.tron.log("Something went wrong")
         );
     } else {
-      for (let i = 0; i < data.length; i++) {
-        if (i <= data.length - 2) {
-          const newCoordinate = {
-            latitude: Number(data[i + 1].latitude),
-            longitude: Number(data[i + 1].longitude),
-          };
-          this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
-        }
-      }
+      let interval = setInterval(async () => {
+        if (this.state.valueSlider == data.length - 1)
+          clearInterval(interval);
+        await this.setState({
+          valueSlider: this.state.valueSlider + 1,
+        })
+        const newCoordinate = {
+          latitude: Number(data[this.state.valueSlider].latitude),
+          longitude: Number(data[this.state.valueSlider].longitude),
+        };
+        this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
+      }, 1000)
     }
   }
 
   render() {
-    console.tron.log("a",this.state.coords)
     return (
       <View style={styles.mainContainer}>
         <MapView
@@ -115,10 +112,10 @@ export default class LaunchScreen extends Component {
             longitudeDelta: 0.1
           }}
         >
-          {this.state.coords.length > 0 && <Polyline coordinates={this.state.coords} />}
           <Marker.Animated
             ref={(ref) => { this.marker = ref }}
             coordinate={this.state.coordinate}
+            style={{ transform: [{ rotate: '90deg' }] }}
           >
             <Image source={Images.car} style={{ height: 40, width: 40 }} />
           </Marker.Animated>
