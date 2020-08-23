@@ -1,26 +1,28 @@
 import React, { Component } from 'react'
 import { ScrollView, Text, Image, View } from 'react-native'
-import { Images } from '../Themes'
+import { Images, Colors } from '../Themes'
 import MapView, { Polyline, Marker, AnimatedRegion } from "react-native-maps";
 import { decode } from "@mapbox/polyline";
 
 // Styles
 import styles from './Styles/LaunchScreenStyles'
 
+const space2 = "%2C";
+const space7 = "%7C";
+const via = "via:";
 export default class LaunchScreen extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      coords: '',
-      setCoords: '',
-      valueSlider: 0,
+      coords: [],
       latitude_car: 0,
       longitude_car: 0,
       coordinate: {
         latitude: 21.054910,
         longitude: 105.731700
-      }
+      },
+      valueSlider: 0
     },
       this.marker = React.createRef();
   }
@@ -29,14 +31,25 @@ export default class LaunchScreen extends Component {
     return lat + "," + lng;
   }
 
-  getDirections = async (startLoc, destinationLoc) => {
+  convertWaypoint(data) {
+    let a = "";
+    for (let i = 0; i < data.length; i++) {
+      a += space7 + via + data[i].latitude + space2 + data[i].longitude;
+    }
+    a = a.substring(3, a.length);
+    console.tron.log("waypoint", a);
+    return a;
+  }
+
+  getDirections = async (startLoc, destinationLoc, waypoint) => {
     const start = this.convert_data(startLoc.latitude, startLoc.longitude);
     const destionation = this.convert_data(destinationLoc.latitude, destinationLoc.longitude);
     try {
       const KEY = "AIzaSyD_x8kFDvxo9vFvzMMJ98m6u4KfVmI12dY";
       let resp = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${start}&destination=${destionation}&key=${KEY}`
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${start}&destination=${destionation}&waypoints=${waypoint}&key=${KEY}`
       );
+      console.tron.log("res", resp);
       let respJson = await resp.json();
       let points = decode(respJson.routes[0].overview_polyline.points);
       let coords = points.map((point, index) => {
@@ -65,39 +78,30 @@ export default class LaunchScreen extends Component {
   }
 
   show_car = (data) => {
-    if (data.length < 3) {
-      this.getDirections(data[0], data[1])
-        .then(coords => {
-          let interval = setInterval(async () => {
-            if (this.state.valueSlider == coords.length)
-              clearInterval(interval);
-            await this.setState({
-              valueSlider: this.state.valueSlider == coords.length - 1 ? 0 : this.state.valueSlider + 1,
-            })
-            const newCoordinate = {
-              latitude: Number(coords[this.state.valueSlider].latitude),
-              longitude: Number(coords[this.state.valueSlider].longitude),
-            };
-            this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
-          }, 1000)
-        })
-        .catch(err =>
-          console.tron.log("Something went wrong")
-        );
-    } else {
-      let interval = setInterval(async () => {
-        if (this.state.valueSlider == data.length - 1)
-          clearInterval(interval);
-        await this.setState({
-          valueSlider: this.state.valueSlider + 1,
-        })
-        const newCoordinate = {
-          latitude: Number(data[this.state.valueSlider].latitude),
-          longitude: Number(data[this.state.valueSlider].longitude),
-        };
-        this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
-      }, 1000)
-    }
+    this.getDirections(data[0], data[1], this.convertWaypoint(data))
+      .then(coords => {
+        console.tron.log("coords", coords);
+        this.setState({ coords });
+        let interval = setInterval(() => {
+          if (this.state.valueSlider < coords.length) {
+            this.setState({
+              valueSlider: this.state.valueSlider + 1,
+            });
+            if (coords[this.state.valueSlider]) {
+              const newCoordinate = {
+                latitude: Number(coords[this.state.valueSlider].latitude),
+                longitude: Number(coords[this.state.valueSlider].longitude)
+              };
+              this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
+            }
+          } else {
+            clearInterval(interval);
+          }
+        }, 1000)
+      })
+      .catch(err =>
+        console.tron.log("Something went wrong")
+      );
   }
 
   render() {
@@ -115,10 +119,14 @@ export default class LaunchScreen extends Component {
           <Marker.Animated
             ref={(ref) => { this.marker = ref }}
             coordinate={this.state.coordinate}
-            style={{ transform: [{ rotate: '90deg' }] }}
           >
-            <Image source={Images.car} style={{ height: 40, width: 40 }} />
+            {/* <Image source={Images.car} style={{ height: 40, width: 40 }} /> */}
           </Marker.Animated>
+          {this.state.coords.length > 0 && <Polyline
+            coordinates={this.state.coords}
+            strokeColor={Colors.main}
+            strokeWidth={3}
+          />}
         </MapView>
       </View >
     )

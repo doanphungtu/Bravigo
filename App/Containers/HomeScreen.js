@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { FlatList as FlatList1 } from 'react-native-gesture-handler'
 import { connect } from 'react-redux';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import posed from 'react-native-pose';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -43,6 +43,8 @@ import { Colors, Metrics, Images } from '../Themes';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity as Touchable } from 'react-native-gesture-handler'
 import { get_current_date, get_current_hour } from '../Transforms/Function_Of_Tu';
+import { decode } from "@mapbox/polyline";
+
 const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 const GOOGLE_MAPS_APIKEY = "AIzaSyD_x8kFDvxo9vFvzMMJ98m6u4KfVmI12dY";
 
@@ -64,6 +66,9 @@ const ScalerLocation = posed.View({ // define click zoom
 const _heightScale = (value) => { return value };
 const _widthScale = (value) => { return value };
 
+const space2 = "%2C";
+const space7 = "%7C";
+const via = "via:";
 class HomeScreen extends Component {
   constructor(props) {
     super(props);
@@ -96,13 +101,14 @@ class HomeScreen extends Component {
         longitude: 0
       },
       valueSlider: 0,
-      max_slider: 1,
+      max_slider: 100,
       running: false,
       speed: 1,
       latitude_car: 0,
       longitude_car: 0,
       interval: "",
-      car_rotation: 0
+      car_rotation: 0,
+      coords: []
     }
   }
 
@@ -127,7 +133,7 @@ class HomeScreen extends Component {
       if (props.data_get_list_place.fetching === false && data_get_list_place) {
         if (data_get_list_place.data) {
           if (data_get_list_place.data.success) {
-            this.setState({ max_slider: data_get_list_place.data.data.length });
+            // this.setState({ max_slider: data_get_list_place.data.data.length });
             if (this.state.tab !== 2) {
               if (this.state.gender === '1') {
                 this.fitAllMarkers(data_get_list_place.data.data);
@@ -341,11 +347,11 @@ class HomeScreen extends Component {
       <View style={{ height: 54 }}></View>
     </View>
   )
-  
+
   getlength(number) {
     return number.toString().length;
   }
-  
+
   renderHeaderHistory = () => (
     <View
       style={styles.viewheaderInnerHistory}
@@ -690,24 +696,66 @@ class HomeScreen extends Component {
     )
   }
 
-  show_car = (data) => {
-    let interval = setInterval(async () => {
-      await this.setState({ interval });
-      if (!this.state.running || this.state.valueSlider == data.length - 1) {
-        clearInterval(this.state.interval);
-      }
-      await this.setState({
-        valueSlider: this.state.valueSlider + 1,
-        car_rotation:data[this.state.valueSlider].rotation
+  getDirections = async (startLoc, destinationLoc, waypoint) => {
+    const start = this.convert_data(startLoc.latitude, startLoc.longitude);
+    const destionation = this.convert_data(destinationLoc.latitude, destinationLoc.longitude);
+    try {
+      const KEY = GOOGLE_MAPS_APIKEY;
+      let resp = await fetch(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${start}&destination=${destionation}&waypoints=${waypoint}&key=${KEY}`
+      );
+      console.tron.log("res", resp);
+      let respJson = await resp.json();
+      let points = decode(respJson.routes[0].overview_polyline.points);
+      let coords = points.map((point, index) => {
+        return {
+          latitude: point[0],
+          longitude: point[1]
+        };
       });
-      const newCoordinate = {
-        latitude: Number(data[this.state.valueSlider].latitude),
-        longitude: Number(data[this.state.valueSlider].longitude)
-      };
-      this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 500);
-    }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 1000 : 500)
+      return coords;
+    } catch (error) {
+      return error;
+    }
+  };
+
+  convertWaypoint(data) {
+    let a = "";
+    for (let i = 0; i < data.length; i++) {
+      a += space7 + via + data[i].latitude + space2 + data[i].longitude;
+    }
+    a = a.substring(3, a.length);
+    console.tron.log("way", a);
+    return a;
+  }
+  convert_data(lat, lng) {
+    return lat + "," + lng;
   }
 
+  show_car = (data) => {
+    this.getDirections(data[0], data[data.length - 1], this.convertWaypoint(data))
+      .then(coords => {
+        console.tron.log("bbb", coords);
+        // let interval = setInterval(() => {
+        //   this.setState({ interval });
+        //   if (!this.state.running || this.state.valueSlider == 100) {
+        //     clearInterval(this.state.interval);
+        //   }
+        //   this.setState({
+        //     valueSlider: this.state.valueSlider + 1,
+        //     car_rotation: coords[Math.floor(this.state.valueSlider * coords.length / 100)].rotation
+        //   });
+        //   const newCoordinate = {
+        //     latitude: Number(coords[Math.floor(this.state.valueSlider * coords.length / 100)].latitude),
+        //     longitude: Number(coords[Math.floor(this.state.valueSlider * coords.length / 100)].longitude)
+        //   };
+        //   this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 500);
+        // }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 1000 : 500)
+      })
+      .catch(err =>
+        console.tron.log("Something went wrong")
+      );
+  }
   render() {
     {
       StatusBar.setBackgroundColor(Colors.main);
@@ -769,7 +817,7 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
-                      style={{ transform: [{ rotate: this.state.car_rotation.toString()+'deg' }] }}
+                      style={{ transform: [{ rotate: this.state.car_rotation.toString() + 'deg' }] }}
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
                     </Marker.Animated>
@@ -842,8 +890,12 @@ class HomeScreen extends Component {
                     :
                     this.render_place()
                   : null
-
               }
+              {this.state.show_direction && <Polyline
+                coordinates={this.state.coords}
+                strokeColor={Colors.main}
+                strokeWidth={3}
+              />}
             </MapView> : null
         }
         {
