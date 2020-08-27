@@ -81,6 +81,7 @@ class HomeScreen extends Component {
     this.marker_car = React.createRef();
     this.state = {
       name_place: '',
+      speed_car: '',
       message: '',
       show_modal_alert: false,
       show_direction: false,
@@ -191,6 +192,7 @@ class HomeScreen extends Component {
       ),
         this.setState({
           name_place: data.namePlace,
+          speed_car: data.speed,
           marker_curren_location: {
             ...this.state.marker_curren_location,
             latitude: Number(data.latitude),
@@ -354,7 +356,7 @@ class HomeScreen extends Component {
 
   renderHeaderHistory = () => (
     <View
-      style={styles.viewheaderInnerHistory}
+      style={[styles.viewheaderInnerHistory, this.state.gender == '0' ? { height: 0.3 * Metrics.screenHeight, alignSelf: 'center' } : null]}
     >
       <SwitchSelector
         initial={0}
@@ -419,20 +421,26 @@ class HomeScreen extends Component {
                 <Text style={styles.txt_btn_bottom}>Tìm kiếm</Text>
           }
         </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={.7}
-          style={styles.btn_bottom}
-          onPress={() => {
-            (this.state.gender == "0" && this.props.data_get_list_place_stop.data_get_list_place_stop) || (this.state.gender == "1" && this.props.data_get_list_place.data_get_list_place) ?
-              this.setState({ show_direction: !this.state.show_direction }) : null
-          }}
-        >
-          <Text style={styles.txt_btn_bottom}>{this.state.show_direction ? "Ẩn lộ trình" : "Hiện lộ trình"}</Text>
-        </TouchableOpacity>
+        {
+          this.state.gender == '1' ?
+            <TouchableOpacity
+              activeOpacity={.7}
+              style={styles.btn_bottom}
+              onPress={() => {
+                if (this.state.gender == '0')
+                  this.show_direction(this.props.data_get_list_place_stop.data_get_list_place_stop.data.data || []);
+                else
+                  this.show_direction(this.props.data_get_list_place.data_get_list_place.data.data || []);
+                this.setState({ show_direction: !this.state.show_direction });
+              }}
+            >
+              <Text style={styles.txt_btn_bottom}>{this.state.show_direction ? "Ẩn lộ trình" : "Hiện lộ trình"}</Text>
+            </TouchableOpacity> : null
+        }
       </View>
 
       {
-        (this.state.gender == "0" && this.props.data_get_list_place_stop.data_get_list_place_stop) || (this.state.gender == "1" && this.props.data_get_list_place.data_get_list_place) ?
+        this.state.gender == "1" && this.props.data_get_list_place.data_get_list_place ?
           <View style={styles.view_slider}>
             <TouchableOpacity
               style={styles.touch_slider}
@@ -530,11 +538,6 @@ class HomeScreen extends Component {
             });
             this.bs1.current.snapTo(1);
             this.bs2.current.snapTo(1);
-            // if (this.state.gender === "0") {
-            //   this.call_api_get_list_place_stop();
-            // } else {
-            //   this.call_api_get_list_place();
-            // }
           }}
           style={styles.scaler}
           activeOpacity={.8}
@@ -553,7 +556,8 @@ class HomeScreen extends Component {
           onPress={async () => {
             await this.setState({
               tab: 3,
-              running: false
+              running: false,
+              show_direction: false
             });
             clearInterval(this.state.interval);
             this.bs1.current.snapTo(2);
@@ -728,34 +732,47 @@ class HomeScreen extends Component {
     console.tron.log("way", a);
     return a;
   }
+
   convert_data(lat, lng) {
     return lat + "," + lng;
   }
 
-  show_car = (data) => {
-    this.getDirections(data[0], data[data.length - 1], this.convertWaypoint(data))
-      .then(coords => {
-        console.tron.log("bbb", coords);
-        // let interval = setInterval(() => {
-        //   this.setState({ interval });
-        //   if (!this.state.running || this.state.valueSlider == 100) {
-        //     clearInterval(this.state.interval);
-        //   }
-        //   this.setState({
-        //     valueSlider: this.state.valueSlider + 1,
-        //     car_rotation: coords[Math.floor(this.state.valueSlider * coords.length / 100)].rotation
-        //   });
-        //   const newCoordinate = {
-        //     latitude: Number(coords[Math.floor(this.state.valueSlider * coords.length / 100)].latitude),
-        //     longitude: Number(coords[Math.floor(this.state.valueSlider * coords.length / 100)].longitude)
-        //   };
-        //   this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 500);
-        // }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 1000 : 500)
-      })
-      .catch(err =>
-        console.tron.log("Something went wrong")
-      );
+  show_direction = (data) => {
+    let coords = [];
+    for (let i = 0; i < data.length; i++) {
+      let item = {};
+      item.latitude = Number.parseFloat(data[i].latitude);
+      item.longitude = Number.parseFloat(data[i].longitude);
+      coords.push(item);
+    }
+    this.setState({ coords });
   }
+
+  show_car = (data) => {
+    let interval = setInterval(() => {
+      this.setState({ interval });
+      if (!this.state.running || this.state.valueSlider == 100) {
+        clearInterval(this.state.interval);
+      } else {
+        data[Math.floor((100 - this.state.valueSlider) * data.length / 100)] ?
+          this.setState({
+            valueSlider: this.state.valueSlider + 1,
+            car_rotation: data[Math.floor((100 - this.state.valueSlider) * data.length / 100)].rotation
+          }) :
+          this.setState({
+            valueSlider: this.state.valueSlider + 1,
+          })
+        if (data[Math.floor((100 - this.state.valueSlider) * data.length / 100)]) {
+          const newCoordinate = {
+            latitude: Number(data[Math.floor((100 - this.state.valueSlider) * data.length / 100)].latitude),
+            longitude: Number(data[Math.floor((100 - this.state.valueSlider) * data.length / 100)].longitude)
+          };
+          this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 700);
+        }
+      }
+    }, this.state.speed == 1 ? 3000 : this.state.speed == 2 ? 2000 : 1000)
+  }
+
   render() {
     {
       StatusBar.setBackgroundColor(Colors.main);
@@ -803,6 +820,7 @@ class HomeScreen extends Component {
                     ref={(ref) => { this.marker = ref }}
                     coordinate={this.state.marker_curren_location}
                     title={this.state.name_place}
+                    description={this.state.speed_car.toString()}
                   >
                     <Image source={Images.location_car} style={{ height: 40, width: 40 }} />
                   </Marker> : null
@@ -817,7 +835,7 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
-                      style={{ transform: [{ rotate: this.state.car_rotation.toString() + 'deg' }] }}
+                      rotation={this.state.car_rotation}
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
                     </Marker.Animated>
@@ -857,41 +875,36 @@ class HomeScreen extends Component {
                     (
                       this.props.data_get_list_place.data_get_list_place ? (
                         this.props.data_get_list_place.data_get_list_place.data.data.map((marker, index) => (
-                          index != 0 && index != this.props.data_get_list_place.data_get_list_place.data.data.length - 1 && this.state.running ?
-                            null
-                            :
-                            <Marker
-                              ref={(ref) => { this.marker_place[index] = ref }}
-                              tracksViewChanges={false}
-                              key={index.toString()}
-                              coordinate={{
-                                latitude: marker.latitude ? Number(marker.latitude) : 0,
-                                longitude: marker.longitude ? Number(marker.longitude) : 0
-                              }}
-                              title={marker.namePlace}
-                              description={marker.creatTimeFormat.toString()}
-                            >{
-                                index == 0 ?
-                                  <Image source={Images.location_end} style={{ height: 40, width: 40 }} /> :
-                                  index == this.props.data_get_list_place.data_get_list_place.data.data.length - 1 ?
-                                    < Image source={Images.location_start} style={{ height: 40, width: 40 }} /> :
-                                    < Image source={Images.stop} style={{ height: 15, width: 15 }} />
-                              }</Marker>
-                        ))
+                          this.props.data_get_list_place.data_get_list_place.data.data.map((marker, index) => (
+                            index != 0 && index != this.props.data_get_list_place.data_get_list_place.data.data.length - 1 ?
+                              null
+                              :
+                              <Marker
+                                ref={(ref) => { this.marker_place[index] = ref }}
+                                tracksViewChanges={false}
+                                key={index.toString()}
+                                coordinate={{
+                                  latitude: marker.latitude ? Number(marker.latitude) : 0,
+                                  longitude: marker.longitude ? Number(marker.longitude) : 0
+                                }}
+                                title={marker.namePlace}
+                                description={marker.creatTimeFormat.toString()}
+                              >{
+                                  index == 0 ?
+                                    <Image source={Images.location_end} style={{ height: 40, width: 40 }} /> :
+                                    index == this.props.data_get_list_place.data_get_list_place.data.data.length - 1 ?
+                                      < Image source={Images.location_start} style={{ height: 40, width: 40 }} /> :
+                                      < Image source={Images.stop} style={{ height: 15, width: 15 }} />
+                                }</Marker>
+                          ))
+                        )
+                        )
                       ) : null
                     )
                 )
                   : null
               }
-              {
-                this.state.show_direction && (this.props.data_get_list_place_stop.data_get_list_place_stop || this.props.data_get_list_place.data_get_list_place) ?
-                  this.state.gender === '0' ?
-                    this.render_place_stop()
-                    :
-                    this.render_place()
-                  : null
-              }
-              {this.state.show_direction && <Polyline
+              {this.state.coords && this.state.show_direction && <Polyline
                 coordinates={this.state.coords}
                 strokeColor={Colors.main}
                 strokeWidth={3}
@@ -904,7 +917,6 @@ class HomeScreen extends Component {
               style={styles.btnLocation}
               activeOpacity={.8}
               onPress={() => {
-                // this.get_currents_location()
                 this.call_api_get_list_place_first();
               }}
             >
@@ -916,12 +928,12 @@ class HomeScreen extends Component {
         <TouchableOpacity
           style={styles.viewBaoLocation}
           onPress={async () => {
-            // this.get_currents_location();
             this.call_api_get_list_place_first();
             await this.setState({
               tab: 2,
               title: 'Vị trí hiện tại',
-              running: false
+              running: false,
+              show_direction: false
             });
             await clearInterval(this.state.interval);
             this.bs2.current.snapTo(0);
