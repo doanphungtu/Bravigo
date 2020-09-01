@@ -69,6 +69,7 @@ class HomeScreen extends Component {
     this.marker_place = [];
     this.marker_place_stop = [];
     this.marker_car = React.createRef();
+    this.marker_animatedCamera = React.createRef();
 
     this.bs1 = React.createRef();
     this.bs2 = React.createRef();
@@ -111,7 +112,9 @@ class HomeScreen extends Component {
         longitude: 0,
         namePlace: '',
         creatTimeFormat: ''
-      }
+      },
+      namePlaceCar: '',
+      creatTimeFormatCar: ''
     }
   }
 
@@ -194,22 +197,28 @@ class HomeScreen extends Component {
   }
 
   fitAllMarkers(data) {
-    this.setState({ dataPlace: data });
-    this.show_direction(data);
-    let MARKERS = [];
-    data.map((marker, index) => {
-      // MARKERS.findIndex(e => e.longitude == Number(marker.longitude)) == MARKERS.findIndex(e => e.latitude == Number(marker.latitude)) && MARKERS.findIndex(e => e.longitude == Number(marker.longitude)) == -1 ?
-      MARKERS.push({ latitude: Number(marker.latitude), longitude: Number(marker.longitude) })
-      // : null
-    })
-    if (MARKERS.length >= 2) {
-      this.map.fitToCoordinates(MARKERS, {
-        edgePadding: DEFAULT_PADDING,
-        animated: true,
-      });
+    dataRevese = [];
+    for (let i = data.length - 1; i >= 0; i--) {
+      dataRevese.push(data[i]);
     }
-    else if (MARKERS.length == 1) {
-      this.get_currents_location_1(MARKERS[0]);
+    this.setState({ dataPlace: dataRevese });
+    if (dataRevese.length) {
+      this.show_direction(dataRevese);
+      let MARKERS = [];
+      dataRevese.map((marker, index) => {
+        // MARKERS.findIndex(e => e.longitude == Number(marker.longitude)) == MARKERS.findIndex(e => e.latitude == Number(marker.latitude)) && MARKERS.findIndex(e => e.longitude == Number(marker.longitude)) == -1 ?
+        MARKERS.push({ latitude: Number(marker.latitude), longitude: Number(marker.longitude) })
+        // : null
+      })
+      if (MARKERS.length >= 2) {
+        this.map.fitToCoordinates(MARKERS, {
+          edgePadding: DEFAULT_PADDING,
+          animated: true,
+        });
+      }
+      else if (MARKERS.length == 1) {
+        this.get_currents_location_1(MARKERS[0]);
+      }
     }
   }
 
@@ -252,7 +261,15 @@ class HomeScreen extends Component {
             this.bs1.current.snapTo(2);
             this.marker_place[index].showCallout()
           } else {
-            this.setState({ data_animatedCamera: { latitude: item.latitude, longitude: item.longitude, namePlace: item.namePlace, creatTimeFormat: item.creatTimeFormat } })
+            this.setState({
+              data_animatedCamera:
+              {
+                latitude: item.latitude,
+                longitude: item.longitude,
+                namePlace: item.namePlace,
+                creatTimeFormat: item.creatTimeFormat
+              }
+            })
             this.map.animateCamera({
               center: {
                 latitude: Number(item.latitude),
@@ -265,6 +282,7 @@ class HomeScreen extends Component {
             },
               100
             );
+            this.marker_animatedCamera.showCallout()
           }
         }}
       >
@@ -332,11 +350,11 @@ class HomeScreen extends Component {
       <View style={styles.view_slider}>
         <TouchableOpacity
           style={styles.touch_slider}
-          onPress={async () => {
-            await this.setState({
+          onPress={() => {
+            this.setState({
               running: !this.state.running
             });
-            // this.show_car(this.state.dataPlace);
+            this.show_car(this.state.dataPlace);
           }}
         >
           {this.state.running ?
@@ -360,12 +378,12 @@ class HomeScreen extends Component {
         />
         <TouchableOpacity
           style={styles.touch_slider}
-          onPress={async () => {
+          onPress={() => {
             if (this.state.speed == 3)
-              await this.setState({ speed: 1 })
+              this.setState({ speed: 1 })
             else
-              await this.setState({ speed: this.state.speed + 1 })
-            this.show_car(this.props.data_get_list_place.data_get_list_place.data.data);
+              this.setState({ speed: this.state.speed + 1 })
+            this.show_car(this.state.dataPlace);
           }}
         >
           <Text style={styles.txt_touch_slider}>X{this.state.speed}</Text>
@@ -427,8 +445,8 @@ class HomeScreen extends Component {
         </Svg>
 
         <TouchableOpacity
-          onPress={async () => {
-            await this.setState({
+          onPress={() => {
+            this.setState({
               tab: 1,
               title: 'Lịch sử',
             });
@@ -449,8 +467,8 @@ class HomeScreen extends Component {
         <View style={styles.viewLocation}></View>
 
         <TouchableOpacity
-          onPress={async () => {
-            await this.setState({
+          onPress={() => {
+            this.setState({
               tab: 3,
               running: false,
               // show_direction: false
@@ -547,51 +565,30 @@ class HomeScreen extends Component {
     this.setState({ coords });
   }
 
-  show_direction_color = (data, index) => {
-    let coordColor = [];
-    for (let i = 0; i < index; i++) {
-      let item = {};
-      item.latitude = Number.parseFloat(data[i].latitude);
-      item.longitude = Number.parseFloat(data[i].longitude);
-      coordColor.push(item);
-    }
-    this.setState({ coordColor });
-  }
-
-   show_car = (data) => {
+  show_car = (data) => {
     let interval = setInterval(() => {
       this.setState({ interval });
       if (!this.state.running || this.state.valueSlider == 100) {
         clearInterval(this.state.interval);
       } else {
-        let index = Math.floor((100 - this.state.valueSlider) * data.length / 100);
-        data[index] ?
-          this.setState({
-            valueSlider: this.state.valueSlider + 1,
-            car_rotation: data[index].rotation
-          }) :
-          this.setState({
-            valueSlider: this.state.valueSlider + 1,
-          })
+        let index = Math.floor(this.state.valueSlider * data.length / 100);
+        console.tron.log("a", index),
+          data[index] ?
+            this.setState({
+              car_rotation: data[index].rotation
+            }) : null
+        this.setState({
+          valueSlider: this.state.valueSlider + 1,
+        })
         if (data[index]) {
           const newCoordinate = {
             latitude: Number(data[index].latitude),
             longitude: Number(data[index].longitude)
           };
-          // this.map.animateCamera({
-          //   center: {
-          //     latitude: Number(newCoordinate.latitude),
-          //     longitude: Number(newCoordinate.longitude)
-          //   },
-          //   pitch: 10,
-          //   heading: 20,
-          //   altitude: 20,
-          //   zoom: 17
-          // },
-          //   100
-          // );
-          // this.show_direction_color(data, index);
-          this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 700);
+          index == 0 ?
+            this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 0) :
+            this.marker_car._component.animateMarkerToCoordinate(newCoordinate, 700);
+          // this.marker_car.showCallout();
         }
       }
     }, this.state.speed == 1 ? 3000 : this.state.speed == 2 ? 2000 : 1000)
@@ -659,6 +656,8 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
+                      title={this.state.namePlaceCar}
+                      description={this.state.creatTimeFormatCar.toString()}
                     // rotation={this.state.car_rotation}
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
@@ -682,9 +681,7 @@ class HomeScreen extends Component {
                         title={marker.namePlace}
                         description={marker.creatTimeFormat.toString()}
                       >
-                        {
-                          <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
-                        }
+                        < Image source={Images.location_start} style={{ height: 40, width: 40 }} />
                       </Marker>
                       : index == this.state.dataPlace.length - 1 ?
                         <Marker
@@ -698,7 +695,9 @@ class HomeScreen extends Component {
                           title={marker.namePlace}
                           description={marker.creatTimeFormat.toString()}
                         >
-                          < Image source={Images.location_start} style={{ height: 40, width: 40 }} />
+                          {
+                            <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
+                          }
                         </Marker>
                         : null
                   ))
@@ -746,13 +745,6 @@ class HomeScreen extends Component {
                   strokeWidth={3}
                 />
               }
-              {/* {
-                this.state.coordColor && this.state.show_direction && <Polyline
-                  coordinates={this.state.coordColor}
-                  strokeColor={'#fbff7b'}
-                  strokeWidth={3}
-                />
-              } */}
             </MapView> : null
         }
         {
@@ -771,9 +763,9 @@ class HomeScreen extends Component {
 
         <TouchableOpacity
           style={styles.viewBaoLocation}
-          onPress={async () => {
+          onPress={() => {
             this.call_api_get_list_place_first();
-            await this.setState({
+            this.setState({
               tab: 2,
               title: 'Vị trí hiện tại',
               running: false,
@@ -785,7 +777,7 @@ class HomeScreen extends Component {
                 creatTimeFormat: ''
               }
             });
-            await clearInterval(this.state.interval);
+            clearInterval(this.state.interval);
             this.bs2.current.snapTo(0);
             this.bs1.current.snapTo(2);
           }}
