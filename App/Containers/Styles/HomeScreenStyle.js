@@ -1,6 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native'
 import { ApplicationStyles, Metrics, Fonts, Colors } from '../../Themes/'
-import metrics from '../../Themes/Metrics';
 const { height } = Dimensions.get('screen');
 export default StyleSheet.create({
   ...ApplicationStyles.screen,
@@ -97,23 +96,26 @@ export default StyleSheet.create({
     height: 0.3 * Metrics.screenHeight
   },
   itemInnerLocation: {
-    height: 80,
+    height: 60,
     flexDirection: 'row'
   },
   viewIconItem: {
-    flex: .1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    width: 60,
+    height: '100%'
   },
   viewContentItem: {
-    flex: .6,
-    alignContent: 'flex-start',
-    justifyContent: 'center'
+    height: '100%',
+    width: Metrics.screenWidth - 60 - 120,
+    justifyContent: 'space-around',
+    alignItems: 'center'
   },
   viewRightItem: {
-    flex: .3,
-    alignContent: 'flex-start',
-    justifyContent: 'center'
+    width: 120,
+    height: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   viewheaderInnerHistory: {
     borderTopLeftRadius: 15,
