@@ -1,5 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native'
 import { ApplicationStyles, Metrics, Fonts, Colors } from '../../Themes/'
+import metrics from '../../Themes/Metrics';
 const { height } = Dimensions.get('screen');
 export default StyleSheet.create({
   ...ApplicationStyles.screen,
@@ -117,21 +118,21 @@ export default StyleSheet.create({
   viewheaderInnerHistory: {
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    height: 0.3 * Metrics.screenHeight + 70,
+    height: 170,
     backgroundColor: 'white',
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   itemInnerHistory: {
     backgroundColor: '#e0e0e0',
-    height: 0.7 * Metrics.screenHeight,
+    height: Metrics.screenHeight - 170,
   },
   viewItemHeaderHistory: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     width: '90%',
-    height: 90
+    height: 80
   },
   iconItemHistory: {
     height: '80%',
@@ -140,15 +141,11 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   viewContentItemHistory: {
-    height: '100%',
-    width: '85%',
-    backgroundColor: 'grey'
-  },
-  fromDay: {
-    flex: .5,
-    marginBottom: 1,
-    backgroundColor: 'white',
-    justifyContent: 'center'
+    height: 60,
+    width: "100%",
+    justifyContent: "space-around",
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   toDay: {
     flex: .5,
@@ -181,12 +178,12 @@ export default StyleSheet.create({
   },
   btn_bottom: {
     height: 40,
-    paddingHorizontal: 5,
+    width: 40,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.main,
-    width: 0.4 * Metrics.screenWidth,
-    borderRadius: 8
+    borderRadius: 5,
+    elevation: 2
   },
   txt_btn_bottom: {
     fontSize: 14,
@@ -251,7 +248,7 @@ export default StyleSheet.create({
   },
   view_slider: {
     width: Metrics.screenWidth,
-    height: 0.175 * Metrics.screenWidth,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row'
@@ -271,6 +268,6 @@ export default StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor:"#c63f17"
+    backgroundColor: "#c63f17"
   }
 })

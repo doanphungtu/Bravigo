@@ -15,6 +15,7 @@ export const reducers = combineReducers({
   reset_password: require('./ResetPasswordRedux').reducer,
   get_list_place: require('./GetListPlaceRedux').reducer,
   get_list_place_stop: require('./GetListPlaceStopRedux').reducer,
+  getCurentLocation: require('./GetCurentLocationRedux').reducer,
 })
 
 export default () => {

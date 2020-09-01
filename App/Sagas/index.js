@@ -15,6 +15,7 @@ import { GetUserInforTypes } from '../Redux/GetUserInforRedux'
 import { ResetPasswordTypes } from '../Redux/ResetPasswordRedux'
 import { GetListPlaceTypes } from '../Redux/GetListPlaceRedux'
 import { GetListPlaceStopTypes } from '../Redux/GetListPlaceStopRedux'
+import { GetCurentLocationTypes } from '../Redux/GetCurentLocationRedux'
 
 /* ------------- Sagas ------------- */
 
@@ -28,6 +29,7 @@ import { get_userinfor } from './GetUserInforSagas'
 import { reset_password } from './ResetPasswordSagas'
 import { get_list_place } from './GetListPlaceSagas'
 import { get_list_place_stop } from './GetListPlaceStopSagas'
+import { getCurentLocation } from './GetCurentLocationSagas'
 
 /* ------------- API ------------- */
 
@@ -68,6 +70,8 @@ export default function* root() {
 
     //get_list_place_stop
     takeLatest(GetListPlaceStopTypes.GETLISTPLACESTOP_REQUEST, get_list_place_stop),
+
+    takeLatest(GetCurentLocationTypes.GETCURENTLOCATION_REQUEST, getCurentLocation),
 
   ])
 }

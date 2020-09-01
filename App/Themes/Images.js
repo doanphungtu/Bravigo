@@ -30,7 +30,8 @@ const images = {
   location_car: require('../Images/App/car_location.png'),
   car: require('../Images/App/car.jpg'),
   car_slider:require('../Images/App/car_slider.png'),
-  stop:require('../Images/App/stop.png'),
+  stop: require('../Images/App/stop.png'),
+  date: require('../Images/App/date.png'),
 }
 
 export default images
