@@ -55,7 +55,7 @@ class IntroduceScreen extends Component {
           <Image style={{ width: 0.6 * Metrics.screenWidth, height: 0.6 * Metrics.screenWidth }} source={Images.logo1} />
         </View>
         <View style={styles.text}>
-          <Text style={styles.txt_des}>Bản quyền thuộc về  <Text style={styles.link} onPress={() => Linking.openURL('http://cni.vn')}>CNI.VN</Text></Text>
+          <Text style={styles.txt_des}>Bản quyền thuộc về  <Text style={styles.link} onPress={() => Linking.openURL('http://lifetek.com.vn')}>LIFETEK.COM.VN</Text></Text>
           <Text style={styles.txt_des}>Mọi thắc mắc vui lòng liên hệ qua ứng dụng hoặc hotro@cni.vn</Text>
         </View>
       </View>

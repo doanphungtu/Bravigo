@@ -165,6 +165,8 @@ class HomeScreen extends Component {
     this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
       this.callAPIGetUserInfor();
       this.call_api_get_list_place_first();
+      this.call_api_get_list_place();
+      this.call_api_get_list_place_stop();
     })
   }
 
@@ -225,6 +227,18 @@ class HomeScreen extends Component {
         this.get_currents_location_1(MARKERS[0]);
       }
     }
+  }
+
+  fitAllMarkersNotRevese(data) {
+    let dataRevese = data;
+    let MARKERS = [];
+    dataRevese.map((marker, index) => {
+      MARKERS.push({ latitude: Number(marker.latitude), longitude: Number(marker.longitude) })
+    })
+    this.map.fitToCoordinates(MARKERS, {
+      edgePadding: DEFAULT_PADDING,
+      animated: true,
+    });
   }
 
   dateStart() {
@@ -348,7 +362,7 @@ class HomeScreen extends Component {
               style={styles.btn_bottom}
               activeOpacity={.7}
               onPress={() => {
-                this.setState({ show_direction: true });
+                this.setState({ show_direction: true, running: false, valueSlider: 0 });
                 this.call_api_get_list_place_stop();
                 this.call_api_get_list_place();
               }}
@@ -467,7 +481,18 @@ class HomeScreen extends Component {
             this.setState({
               tab: 1,
               title: 'Lịch sử',
+              show_direction: true
             });
+            if (this.state.dataPlace.length) {
+              let MARKERS = [];
+              this.state.dataPlace.map((marker, index) => {
+                MARKERS.push({ latitude: Number(marker.latitude), longitude: Number(marker.longitude) })
+              })
+              this.map.fitToCoordinates(MARKERS, {
+                edgePadding: DEFAULT_PADDING,
+                animated: true,
+              });
+            }
             this.bs1.current.snapTo(1);
             this.bs2.current.snapTo(1);
           }}
@@ -567,8 +592,8 @@ class HomeScreen extends Component {
     const end = moment(get_current_date() + " 11:59").format('X');
     const start = moment(get_current_date() + " 00:01").format('X');
     this.props.getCurentLocation(end, "0", idDevice, token);
-    this.props.get_list_place(end, start, idDevice, token);
-    this.props.get_list_place_stop(end, start, idDevice, token);
+    // this.props.get_list_place(end, start, idDevice, token);
+    // this.props.get_list_place_stop(end, start, idDevice, token);
   }
 
   show_direction = (data) => {
@@ -591,10 +616,10 @@ class HomeScreen extends Component {
         clearInterval(this.state.interval);
       } else {
         let index = Math.floor(this.state.valueSlider * data.length / 100);
-        // data[index] ?
-        //   this.setState({
-        //     car_rotation: data[index].rotation
-        //   }) : null
+        data[index] ?
+          this.setState({
+            car_rotation: data[index].rotation
+          }) : null
         this.setState({
           valueSlider: this.state.valueSlider + 1,
         })
@@ -611,6 +636,7 @@ class HomeScreen extends Component {
           });
           this.marker_car.showCallout();
           this.marker_car.animateMarkerToCoordinate(newCoordinate, 700);
+          this.map.animateCamera({ center: newCoordinate }, 10);
         }
       }
     }, this.state.speed == 1 ? 3000 : this.state.speed == 2 ? 2000 : 1000)
@@ -686,7 +712,8 @@ class HomeScreen extends Component {
                         this.state.speedCar +
                         (this.state.timeStopCar != '' ? ' | ' : '') + this.state.timeStopCar + (this.state.timeStopCar != '' ? '\'' : '')
                       }
-                    // rotation={this.state.car_rotation}
+                      rotation={this.state.car_rotation}
+                      flat={false}
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
                     </Marker>
