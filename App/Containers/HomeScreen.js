@@ -141,6 +141,8 @@ class HomeScreen extends Component {
       if (props.data_get_list_place.fetching === false && data_get_list_place) {
         if (data_get_list_place.data.success) {
           this.fitAllMarkers(data_get_list_place.data.data);
+        } else {
+          this.setState({ dataPlace: [] })
         }
       }
     }
@@ -199,12 +201,12 @@ class HomeScreen extends Component {
     this.props.get_user_infor(idDevice)
   }
 
-  async fitAllMarkers(data) {
+  fitAllMarkers(data) {
     let dataRevese = [];
     for (let i = data.length - 1; i >= 0; i--) {
       dataRevese.push(data[i]);
     }
-    await this.setState({ dataPlace: dataRevese });
+    this.setState({ dataPlace: dataRevese });
     this.show_direction(dataRevese);
     if (dataRevese.length) {
       let MARKERS = [];
@@ -676,7 +678,7 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
-                      tracksViewChanges={false}
+                      // tracksViewChanges={false}
                       title={this.state.namePlaceCar}
                       description={
                         this.state.creatTimeFormatCar.toString() +
@@ -693,45 +695,52 @@ class HomeScreen extends Component {
               }
 
               {//end
-                this.state.tab == 1 && this.state.dataPlace.length ?
-                  <Marker
-                    ref={(ref) => { this.marker_place[this.state.dataPlace.length - 1] = ref }}
-                    tracksViewChanges={false}
-                    key={(this.state.dataPlace.length - 1).toString()}
-                    coordinate={{
-                      latitude: Number(this.state.dataPlace[this.state.dataPlace.length - 1].latitude),
-                      longitude: Number(this.state.dataPlace[this.state.dataPlace.length - 1].longitude)
-                    }}
-                    title={this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}
-                    description={this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat.toString()}
-                  >
-                    {
-                      <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
-                    }
-                  </Marker> : null
+                this.state.dataPlace[this.state.dataPlace.length - 1] ?
+                  this.state.tab == 1 ?
+                    <Marker
+                      ref={(ref) => { this.marker_place[this.state.dataPlace.length - 1] = ref }}
+                      // tracksViewChanges={false}
+                      key={'a0'}
+                      coordinate={{
+                        latitude: Number(this.state.dataPlace[this.state.dataPlace.length - 1].latitude),
+                        longitude: Number(this.state.dataPlace[this.state.dataPlace.length - 1].longitude)
+                      }}
+                      title={this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}
+                      description={this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat.toString()}
+                    >
+                      {
+                        <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
+                      }
+                    </Marker>
+                    : null
+                  : null
               }
               {//start
-                // console.tron.log("a", this.state.dataPlace),
-                this.state.tab == 1 && this.state.dataPlace.length ?
-                  <Marker
-                    ref={(ref) => { this.marker_place[0] = ref }}
-                    tracksViewChanges={false}
-                    key={'0'}
-                    coordinate={{
-                      latitude: Number(this.state.dataPlace[0].latitude),
-                      longitude: Number(this.state.dataPlace[0].longitude)
-                    }}
-                    title={this.state.dataPlace[0].namePlace}
-                    description={this.state.dataPlace[0].creatTimeFormat.toString()}
-                  >
-                    <Image source={Images.location_start} style={{ height: 40, width: 40 }} />
-                  </Marker> : null
+                this.state.dataPlace[0] ?
+                  this.state.tab == 1 ?
+                    (
+                      <Marker
+                        ref={(ref) => { this.marker_place[0] = ref }}
+                        // tracksViewChanges={false}
+                        key={'b0'}
+                        coordinate={{
+                          latitude: Number(this.state.dataPlace[0].latitude),
+                          longitude: Number(this.state.dataPlace[0].longitude)
+                        }}
+                        title={this.state.dataPlace[0].namePlace}
+                        description={this.state.dataPlace[0].creatTimeFormat.toString()}
+                      >
+                        <Image source={Images.location_start} style={{ height: 40, width: 40 }} />
+                      </Marker>
+                    )
+                    : null
+                  : null
               }
               {
                 this.state.data_animatedCamera ?
                   <Marker
                     ref={(ref) => { this.marker_animatedCamera = ref }}
-                    tracksViewChanges={false}
+                    // tracksViewChanges={false}
                     // key={index.toString()}
                     coordinate={{
                       latitude: Number(this.state.data_animatedCamera.latitude),
@@ -746,7 +755,7 @@ class HomeScreen extends Component {
                   this.state.dataPlaceStop.map((marker, index) => (
                     <Marker
                       ref={(ref) => { this.marker_place_stop[index] = ref }}
-                      tracksViewChanges={false}
+                      // tracksViewChanges={false}
                       key={index.toString()}
                       coordinate={{
                         latitude: Number(marker.latitude),
@@ -763,7 +772,6 @@ class HomeScreen extends Component {
                 ) : null
               }
               {
-                console.tron.log("a", this.state.coords),
                 this.state.coords.length && this.state.show_direction ? <Polyline
                   coordinates={this.state.coords}
                   strokeColor={Colors.main}
