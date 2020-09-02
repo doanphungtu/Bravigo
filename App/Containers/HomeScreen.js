@@ -139,7 +139,7 @@ class HomeScreen extends Component {
 
     if (props.data_get_list_place.error === false) {
       if (props.data_get_list_place.fetching === false && data_get_list_place) {
-        if (data_get_list_place.data) {
+        if (data_get_list_place.data.success) {
           this.fitAllMarkers(data_get_list_place.data.data);
         }
       }
@@ -200,13 +200,13 @@ class HomeScreen extends Component {
   }
 
   async fitAllMarkers(data) {
-    dataRevese = [];
+    let dataRevese = [];
     for (let i = data.length - 1; i >= 0; i--) {
       dataRevese.push(data[i]);
     }
     await this.setState({ dataPlace: dataRevese });
+    this.show_direction(dataRevese);
     if (dataRevese.length) {
-      this.show_direction(dataRevese);
       let MARKERS = [];
       dataRevese.map((marker, index) => {
         // MARKERS.findIndex(e => e.longitude == Number(marker.longitude)) == MARKERS.findIndex(e => e.latitude == Number(marker.latitude)) && MARKERS.findIndex(e => e.longitude == Number(marker.longitude)) == -1 ?
@@ -711,6 +711,7 @@ class HomeScreen extends Component {
                   </Marker> : null
               }
               {//start
+                // console.tron.log("a", this.state.dataPlace),
                 this.state.tab == 1 && this.state.dataPlace.length ?
                   <Marker
                     ref={(ref) => { this.marker_place[0] = ref }}
@@ -762,11 +763,12 @@ class HomeScreen extends Component {
                 ) : null
               }
               {
-                this.state.coords && this.state.show_direction && <Polyline
+                console.tron.log("a", this.state.coords),
+                this.state.coords.length && this.state.show_direction ? <Polyline
                   coordinates={this.state.coords}
                   strokeColor={Colors.main}
                   strokeWidth={3}
-                />
+                /> : null
               }
             </MapView> : null
         }
