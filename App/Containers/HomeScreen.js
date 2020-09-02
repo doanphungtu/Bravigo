@@ -191,6 +191,7 @@ class HomeScreen extends Component {
     } else {
       this.setState({ message: "Không tìm thấy lịch sử đi lại trong khoảng thời gian này", show_modal_alert: true, name_place: '' });
     }
+    this.marker.showCallout();
   }
 
   async callAPIGetUserInfor() {
@@ -430,6 +431,9 @@ class HomeScreen extends Component {
           <View>
             <Text>{this.state.name_place}</Text>
           </View>
+          <View>
+            <Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km'}</Text>
+          </View>
         </View>
       </View>
     </View>
@@ -563,7 +567,6 @@ class HomeScreen extends Component {
     this.props.getCurentLocation(end, "0", idDevice, token);
     this.props.get_list_place(end, start, idDevice, token);
     this.props.get_list_place_stop(end, start, idDevice, token);
-    this.marker.showCallout();
   }
 
   show_direction = (data) => {
@@ -643,7 +646,7 @@ class HomeScreen extends Component {
           renderHeader={this.renderHeaderLocation}
         />
         {
-          this.state.region.latitude !== 0 ?
+          this.state.region.latitude != 0 ?
             < MapView
               provider='google'
               loadingEnabled={true}
@@ -653,19 +656,19 @@ class HomeScreen extends Component {
               onRegionChangeComplete={(region) => this.onRegionChange(region)}
             >
               {
-                this.state.tab === 2 ?
+                this.state.tab == 2 ?
                   <Marker
                     ref={(ref) => { this.marker = ref }}
                     coordinate={this.state.marker_curren_location}
                     title={this.state.name_place}
-                    description={this.state.speed_car.toString()}
+                    description={Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}
                   >
                     <Image source={Images.location_car} style={{ height: 40, width: 40 }} />
                   </Marker> : null
               }
 
               {
-                this.state.tab === 1 ?
+                this.state.tab == 1 ?
                   (
                     <Marker
                       ref={(ref) => { this.marker_car = ref }}
@@ -690,7 +693,7 @@ class HomeScreen extends Component {
               }
 
               {//end
-                this.state.tab === 1 && this.state.dataPlace.length ?
+                this.state.tab == 1 && this.state.dataPlace.length ?
                   <Marker
                     ref={(ref) => { this.marker_place[this.state.dataPlace.length - 1] = ref }}
                     tracksViewChanges={false}
@@ -708,7 +711,7 @@ class HomeScreen extends Component {
                   </Marker> : null
               }
               {//start
-                this.state.tab === 1 && this.state.dataPlace.length ?
+                this.state.tab == 1 && this.state.dataPlace.length ?
                   <Marker
                     ref={(ref) => { this.marker_place[0] = ref }}
                     tracksViewChanges={false}
@@ -738,7 +741,7 @@ class HomeScreen extends Component {
                   /> : null
               }
               {
-                this.state.tab === 1 && this.state.dataPlaceStop.length ? (
+                this.state.tab == 1 && this.state.dataPlaceStop.length ? (
                   this.state.dataPlaceStop.map((marker, index) => (
                     <Marker
                       ref={(ref) => { this.marker_place_stop[index] = ref }}
@@ -768,7 +771,7 @@ class HomeScreen extends Component {
             </MapView> : null
         }
         {
-          this.state.tab === 2 ?
+          this.state.tab == 2 ?
             <TouchableOpacity
               style={styles.btnLocation}
               activeOpacity={.8}
