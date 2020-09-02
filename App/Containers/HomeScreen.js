@@ -581,6 +581,8 @@ class HomeScreen extends Component {
   }
 
   show_car = (data) => {
+    if (this.state.valueSlider <= 1)
+      this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
     let interval = setInterval(() => {
       this.setState({ interval });
       if (!this.state.running || this.state.valueSlider == 100) {
@@ -599,8 +601,6 @@ class HomeScreen extends Component {
             latitude: Number(data[index].latitude),
             longitude: Number(data[index].longitude)
           };
-          if (index == 0)
-            this.setState({ latitude_car: newCoordinate.latitude, longitude_car: newCoordinate.longitude });
           this.setState({
             namePlaceCar: data[index].namePlace,
             creatTimeFormatCar: data[index].creatTimeFormat,
