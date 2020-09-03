@@ -608,38 +608,40 @@ class HomeScreen extends Component {
   }
 
   show_car = (data) => {
-    if (this.state.valueSlider <= 1)
-      this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
-    let interval = setInterval(() => {
-      this.setState({ interval });
-      if (!this.state.running || this.state.valueSlider == 100) {
-        clearInterval(this.state.interval);
-      } else {
-        let index = Math.floor(this.state.valueSlider * data.length / 100);
-        data[index] ?
+    if (data.length > 0) {
+      if (this.state.valueSlider <= 1)
+        this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
+      let interval = setInterval(() => {
+        this.setState({ interval });
+        if (!this.state.running || this.state.valueSlider == 100) {
+          clearInterval(this.state.interval);
+        } else {
+          let index = Math.floor(this.state.valueSlider * data.length / 100);
+          // data[index] ?
+          //   this.setState({
+          //     car_rotation: data[index].rotation
+          //   }) : null
           this.setState({
-            car_rotation: data[index].rotation
-          }) : null
-        this.setState({
-          valueSlider: this.state.valueSlider + 1,
-        })
-        if (data[index]) {
-          const newCoordinate = {
-            latitude: Number(data[index].latitude),
-            longitude: Number(data[index].longitude)
-          };
-          this.setState({
-            namePlaceCar: data[index].namePlace,
-            creatTimeFormatCar: data[index].creatTimeFormat,
-            speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
-            timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
-          });
-          this.marker_car.showCallout();
-          this.marker_car.animateMarkerToCoordinate(newCoordinate, 700);
-          this.map.animateCamera({ center: newCoordinate }, 10);
+            valueSlider: this.state.valueSlider + 1,
+          })
+          if (data[index]) {
+            const newCoordinate = {
+              latitude: Number(data[index].latitude),
+              longitude: Number(data[index].longitude)
+            };
+            this.setState({
+              namePlaceCar: data[index].namePlace,
+              creatTimeFormatCar: data[index].creatTimeFormat,
+              speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
+              timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
+            });
+            this.marker_car.showCallout();
+            this.marker_car.animateMarkerToCoordinate(newCoordinate, 700);
+            this.map.animateCamera({ center: newCoordinate }, 10);
+          }
         }
-      }
-    }, this.state.speed == 1 ? 3000 : this.state.speed == 2 ? 2000 : 1000)
+      }, this.state.speed == 1 ? 3000 : this.state.speed == 2 ? 2000 : 1000)
+    }
   }
 
   render() {
@@ -712,8 +714,6 @@ class HomeScreen extends Component {
                         this.state.speedCar +
                         (this.state.timeStopCar != '' ? ' | ' : '') + this.state.timeStopCar + (this.state.timeStopCar != '' ? '\'' : '')
                       }
-                      rotation={this.state.car_rotation}
-                      flat={false}
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
                     </Marker>
