@@ -21,12 +21,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
-import Foundation from 'react-native-vector-icons/Foundation';
 import Svg, { G, Path } from 'react-native-svg';
 import BottomSheet from 'reanimated-bottom-sheet'
 import DatePicker from '../Transforms/DatePicker/DatePicker'
 import CardView from 'react-native-cardview'
-import MapViewDirections from 'react-native-maps-directions';
 import Modal from 'react-native-modal'
 import moment from 'moment'
 import Slider from '../Config/Slider.js'
@@ -43,7 +41,6 @@ import { Colors, Metrics, Images } from '../Themes';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity as Touchable } from 'react-native-gesture-handler'
 import { get_current_date, get_current_hour } from '../Transforms/Function_Of_Tu';
-import { decode } from "@mapbox/polyline";
 
 const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 const GOOGLE_MAPS_APIKEY = "AIzaSyD_x8kFDvxo9vFvzMMJ98m6u4KfVmI12dY";
@@ -275,11 +272,7 @@ class HomeScreen extends Component {
         style={styles.viewItemInnerHistory}
         activeOpacity={.5}
         onPress={async () => {
-          // if (index == 0 || index == this.state.dataPlace.length - 1) {
-          //   await this.get_currents_location_1({ latitude: item.latitude, longitude: item.longitude });
-          //   await this.bs1.current.snapTo(2);
-          //   await this.marker_place[index].showCallout()
-          // } else {
+          await this.bs1.current.snapTo(2);
           await this.setState({
             data_animatedCamera:
             {
@@ -308,7 +301,6 @@ class HomeScreen extends Component {
             100
           );
           this.marker_animatedCamera.showCallout()
-          // }
         }}
       >
         <View style={styles.itemInnerLocation}>
@@ -362,7 +354,18 @@ class HomeScreen extends Component {
               style={styles.btn_bottom}
               activeOpacity={.7}
               onPress={() => {
-                this.setState({ show_direction: true, running: false, valueSlider: 0 });
+                this.setState({
+                  show_direction: true,
+                  running: false,
+                  valueSlider: 0,
+                  data_animatedCamera: {
+                    latitude: 0,
+                    longitude: 0,
+                    namePlace: '',
+                    creatTimeFormat: ''
+                  },
+                  latitude_car: 0,
+                });
                 this.call_api_get_list_place_stop();
                 this.call_api_get_list_place();
               }}
@@ -617,10 +620,6 @@ class HomeScreen extends Component {
           clearInterval(this.state.interval);
         } else {
           let index = Math.floor(this.state.valueSlider * data.length / 100);
-          // data[index] ?
-          //   this.setState({
-          //     car_rotation: data[index].rotation
-          //   }) : null
           this.setState({
             valueSlider: this.state.valueSlider + 1,
           })
@@ -636,11 +635,11 @@ class HomeScreen extends Component {
               timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
             });
             this.marker_car.showCallout();
-            this.marker_car.animateMarkerToCoordinate(newCoordinate, 700);
+            this.marker_car.animateMarkerToCoordinate(newCoordinate, 500);
             this.map.animateCamera({ center: newCoordinate }, 10);
           }
         }
-      }, this.state.speed == 1 ? 3000 : this.state.speed == 2 ? 2000 : 1000)
+      }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 500 : 50)
     }
   }
 
@@ -698,7 +697,7 @@ class HomeScreen extends Component {
               }
 
               {
-                this.state.tab == 1 ?
+                this.state.tab == 1 && this.state.latitude_car != 0 ?
                   (
                     <Marker
                       ref={(ref) => { this.marker_car = ref }}
@@ -764,11 +763,10 @@ class HomeScreen extends Component {
                   : null
               }
               {
-                this.state.data_animatedCamera ?
+                this.state.data_animatedCamera.latitude != 0 ?
                   <Marker
                     ref={(ref) => { this.marker_animatedCamera = ref }}
                     // tracksViewChanges={false}
-                    // key={index.toString()}
                     coordinate={{
                       latitude: Number(this.state.data_animatedCamera.latitude),
                       longitude: Number(this.state.data_animatedCamera.longitude)
@@ -830,6 +828,7 @@ class HomeScreen extends Component {
               title: 'Vị trí hiện tại',
               running: false,
               show_direction: false,
+              latitude_car: 0,
               data_animatedCamera: {
                 latitude: 0,
                 longitude: 0,
