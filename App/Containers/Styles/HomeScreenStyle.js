@@ -82,7 +82,7 @@ export default StyleSheet.create({
     right: 0.03 * Metrics.screenHeight
   },
   viewHeaderLocation: {
-    height: 40,
+    height: 30,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
     height: 0.1 * Metrics.screenHeight,
@@ -93,11 +93,12 @@ export default StyleSheet.create({
   },
   viewInnerLocation: {
     backgroundColor: '#fafafa',
-    height: 0.3 * Metrics.screenHeight
+    height: 0.3 * Metrics.screenHeight + 10
   },
   itemInnerLocation: {
-    height: 60,
-    flexDirection: 'row'
+    // height: 60,
+    flexDirection: 'row',
+    paddingVertical: 5
   },
   viewIconItem: {
     justifyContent: 'center',

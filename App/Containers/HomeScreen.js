@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { FlatList as FlatList1 } from 'react-native-gesture-handler'
 import { connect } from 'react-redux';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Callout, Marker, Polyline } from 'react-native-maps';
 import posed from 'react-native-pose';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -67,6 +67,7 @@ class HomeScreen extends Component {
     this.marker_place_stop = [];
     this.marker_car = React.createRef();
     this.marker_animatedCamera = React.createRef();
+    this.timer = React.createRef();
 
     this.bs1 = React.createRef();
     this.bs2 = React.createRef();
@@ -74,6 +75,7 @@ class HomeScreen extends Component {
     this.state = {
       name_place: '',
       speed_car: '',
+      createTimeCar: '',
       message: '',
       show_modal_alert: false,
       show_direction: false,
@@ -99,6 +101,7 @@ class HomeScreen extends Component {
       latitude_car: 0,
       longitude_car: 0,
       interval: "",
+      // timmer: '',
       car_rotation: 0,
       coords: [],
       coordColor: [],
@@ -113,7 +116,7 @@ class HomeScreen extends Component {
       namePlaceCar: '',
       creatTimeFormatCar: '',
       speedCar: '',
-      timeStopCar: ''
+      timeStopCar: '',
     }
   }
 
@@ -160,10 +163,10 @@ class HomeScreen extends Component {
 
   componentDidMount() {
     this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
-      this.callAPIGetUserInfor();
+      // this.callAPIGetUserInfor();
       this.call_api_get_list_place_first();
-      this.call_api_get_list_place();
-      this.call_api_get_list_place_stop();
+      // this.call_api_get_list_place();
+      // this.call_api_get_list_place_stop();
     })
   }
 
@@ -184,15 +187,27 @@ class HomeScreen extends Component {
       this.setState({
         name_place: data.namePlace,
         speed_car: data.speed,
+        creatTimeFormatCar: data.creatTimeFormat,
         marker_curren_location: {
           latitude: Number(data.latitude),
           longitude: Number(data.longitude)
         }
-      })
+      });
     } else {
-      this.setState({ message: "Không tìm thấy lịch sử đi lại trong khoảng thời gian này", show_modal_alert: true, name_place: '' });
+      this.setState({
+        message: "Không tìm thấy lịch sử đi lại trong khoảng thời gian này",
+        show_modal_alert: true,
+        name_place: '',
+        creatTimeFormatCar: ""
+      });
     }
-    this.marker.showCallout();
+  }
+
+  componentDidUpdate(prevState, prevProps) {
+    if (this.state.name_place != '' && this.state.tab == 2) {
+      // this.marker.showCallout();
+      setTimeout(() => this.marker.showCallout(), 0);
+    }
   }
 
   async callAPIGetUserInfor() {
@@ -220,9 +235,9 @@ class HomeScreen extends Component {
           animated: true,
         });
       }
-      else if (MARKERS.length == 1) {
-        this.get_currents_location_1(MARKERS[0]);
-      }
+      // else if (MARKERS.length == 1) {
+      //   this.get_currents_location_1(MARKERS[0]);
+      // }
     }
   }
 
@@ -412,9 +427,10 @@ class HomeScreen extends Component {
           style={styles.touch_slider}
           onPress={() => {
             if (this.state.speed == 3)
-              this.setState({ speed: 1 })
+              this.setState({ speed: 1 });
             else
-              this.setState({ speed: this.state.speed + 1 })
+              this.setState({ speed: this.state.speed + 1 });
+            clearInterval(this.state.interval);
             this.show_car(this.state.dataPlace);
           }}
         >
@@ -448,10 +464,16 @@ class HomeScreen extends Component {
         </View>
         <View style={{ width: Metrics.screenWidth - 60, paddingHorizontal: 10 }}>
           <View>
-            <Text>{this.state.name_place}</Text>
+            <Text><Text style={{ fontWeight: 'bold' }}>Địa chỉ:</Text>{this.state.name_place}</Text>
           </View>
           <View>
-            <Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km'}</Text>
+            <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
+          </View>
+          <View>
+            <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ:</Text> {Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km'}</Text>
+          </View>
+          <View>
+            <Text><Text style={{ fontWeight: 'bold' }}>Trạng thái:</Text> Xe đang chạy</Text>
           </View>
         </View>
       </View>
@@ -519,6 +541,7 @@ class HomeScreen extends Component {
               running: false,
               // show_direction: false
             });
+            this.callAPIGetUserInfor();
             clearInterval(this.state.interval);
             this.bs1.current.snapTo(2);
             this.bs2.current.snapTo(1);
@@ -577,7 +600,7 @@ class HomeScreen extends Component {
     const idDevice = await AsyncStorage.getItem("idDevice");
     const token = await AsyncStorage.getItem("token");
     const start = moment(this.state.dateStart + " 00:01").format('X');
-    const end = moment(this.state.dateStart + " 11:59").format('X');
+    const end = moment(this.state.dateStart + " 23:59").format('X');
     this.props.get_list_place_stop(end, start, idDevice, token);
   }
 
@@ -585,18 +608,15 @@ class HomeScreen extends Component {
     const idDevice = await AsyncStorage.getItem("idDevice");
     const token = await AsyncStorage.getItem("token");
     const start = moment(this.state.dateStart + " 00:01").format('X');
-    const end = moment(this.state.dateStart + " 11:59").format('X');
+    const end = moment(this.state.dateStart + " 23:59").format('X');
     this.props.get_list_place(end, start, idDevice, token);
   }
 
   async call_api_get_list_place_first() {
     const idDevice = await AsyncStorage.getItem("idDevice");
     const token = await AsyncStorage.getItem("token");
-    const end = moment(get_current_date() + " 11:59").format('X');
-    const start = moment(get_current_date() + " 00:01").format('X');
+    const end = moment(get_current_date() + " 23:59").format('X');
     this.props.getCurentLocation(end, "0", idDevice, token);
-    // this.props.get_list_place(end, start, idDevice, token);
-    // this.props.get_list_place_stop(end, start, idDevice, token);
   }
 
   show_direction = (data) => {
@@ -618,6 +638,7 @@ class HomeScreen extends Component {
         this.setState({ interval });
         if (!this.state.running || this.state.valueSlider == 100) {
           clearInterval(this.state.interval);
+          this.setState({ running: false });
         } else {
           let index = Math.floor(this.state.valueSlider * data.length / 100);
           this.setState({
@@ -635,11 +656,11 @@ class HomeScreen extends Component {
               timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
             });
             this.marker_car.showCallout();
-            this.marker_car.animateMarkerToCoordinate(newCoordinate, 500);
+            this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
             this.map.animateCamera({ center: newCoordinate }, 10);
           }
         }
-      }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 500 : 50)
+      }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
     }
   }
 
@@ -648,6 +669,10 @@ class HomeScreen extends Component {
       StatusBar.setBackgroundColor(Colors.main);
       StatusBar.setBarStyle('light-content');
       console.disableYellowBox = true;
+      // if (this.state.tab == 2)
+      //   this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000)
+      // else
+      //   clearInterval(this.timmer);
     }
     return (
       <View style={styles.container}>
@@ -689,10 +714,15 @@ class HomeScreen extends Component {
                   <Marker
                     ref={(ref) => { this.marker = ref }}
                     coordinate={this.state.marker_curren_location}
-                    title={this.state.name_place}
-                    description={Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}
                   >
                     <Image source={Images.location_car} style={{ height: 40, width: 40 }} />
+                    <Callout style={{ height: 100 }} >
+                      <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
+                        <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.name_place}</Text>
+                        <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
+                        <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}</Text>
+                      </View>
+                    </Callout>
                   </Marker> : null
               }
 
