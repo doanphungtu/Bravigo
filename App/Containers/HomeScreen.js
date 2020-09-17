@@ -68,6 +68,7 @@ class HomeScreen extends Component {
     this.marker_car = React.createRef();
     this.marker_animatedCamera = React.createRef();
     this.timer = React.createRef();
+    this.interval = undefined;
 
     this.bs1 = React.createRef();
     this.bs2 = React.createRef();
@@ -163,7 +164,6 @@ class HomeScreen extends Component {
 
   componentDidMount() {
     this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
-      // this.callAPIGetUserInfor();
       this.call_api_get_list_place_first();
       // this.call_api_get_list_place();
       // this.call_api_get_list_place_stop();
@@ -205,8 +205,11 @@ class HomeScreen extends Component {
 
   componentDidUpdate(prevState, prevProps) {
     if (this.state.name_place != '' && this.state.tab == 2) {
-      // this.marker.showCallout();
       setTimeout(() => this.marker.showCallout(), 0);
+    } 
+    if (this.state.running && this.state.valueSlider >= 100) {
+      clearInterval(this.interval);
+      this.setState({ running: false });
     }
   }
 
@@ -634,31 +637,25 @@ class HomeScreen extends Component {
     if (data.length > 0) {
       if (this.state.valueSlider <= 1)
         this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
-      let interval = setInterval(() => {
-        this.setState({ interval });
-        if (!this.state.running || this.state.valueSlider == 100) {
-          clearInterval(this.state.interval);
-          this.setState({ running: false });
-        } else {
-          let index = Math.floor(this.state.valueSlider * data.length / 100);
+      this.interval = setInterval(() => {
+        let index = Math.floor(this.state.valueSlider * data.length / 100);
+        this.setState({
+          valueSlider: this.state.valueSlider + 1,
+        })
+        if (data[index]) {
+          const newCoordinate = {
+            latitude: Number(data[index].latitude),
+            longitude: Number(data[index].longitude)
+          };
           this.setState({
-            valueSlider: this.state.valueSlider + 1,
-          })
-          if (data[index]) {
-            const newCoordinate = {
-              latitude: Number(data[index].latitude),
-              longitude: Number(data[index].longitude)
-            };
-            this.setState({
-              namePlaceCar: data[index].namePlace,
-              creatTimeFormatCar: data[index].creatTimeFormat,
-              speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
-              timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
-            });
-            this.marker_car.showCallout();
-            this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
-            this.map.animateCamera({ center: newCoordinate }, 10);
-          }
+            namePlaceCar: data[index].namePlace,
+            creatTimeFormatCar: data[index].creatTimeFormat,
+            speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
+            timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
+          });
+          this.marker_car.showCallout();
+          this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
+          this.map.animateCamera({ center: newCoordinate }, 10);
         }
       }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
     }

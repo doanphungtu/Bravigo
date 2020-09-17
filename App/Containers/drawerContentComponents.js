@@ -124,7 +124,7 @@ class drawerContentComponents extends Component {
           style={styles.headerContainer}
         >
           <Image source={Images.user_avatar} style={{ width: 120, height: 120 }} />
-          <Text style={styles.txtHeaderDrawer}>{this.props.data_userinfor.data_get_userinfor ? this.props.data_userinfor.data_get_userinfor.data.msg.firstname + " " + this.props.data_userinfor.data_get_userinfor.data.msg.lastName : ''}</Text>
+          <Text style={styles.txtHeaderDrawer}>{this.props.data_userinfor.data_get_userinfor ? this.props.data_userinfor.data_get_userinfor.data.msg.firstname + " " + this.props.data_userinfor.data_get_userinfor.data.msg.lastName : 'Unknown'}</Text>
         </LinearGradient>
         <View style={styles.contentDrawer}>
           <FlatList
