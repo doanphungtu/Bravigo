@@ -96,7 +96,7 @@ export default StyleSheet.create({
     height: 0.3 * Metrics.screenHeight + 10
   },
   itemInnerLocation: {
-    // height: 60,
+    height: 60,
     flexDirection: 'row',
     paddingVertical: 5
   },
