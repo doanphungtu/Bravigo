@@ -36,7 +36,8 @@ class SignInScreen extends Component {
       hidePassword: false,
       show_modal_fail: false,
       show_modal_success: false,
-      message: ''
+      message: '',
+      isloading: false
     }
   }
 
@@ -106,8 +107,11 @@ class SignInScreen extends Component {
 
   async check_token() {
     const idDevice = await AsyncStorage.getItem("idDevice");
-    if (idDevice)
-      this.props.navigation.navigate("DrawerNav")
+    if (idDevice) {
+      this.props.navigation.navigate("DrawerNav");
+    } else {
+      this.setState({ isloading: true });
+    }
   }
 
   render() {
@@ -116,62 +120,64 @@ class SignInScreen extends Component {
       StatusBar.setBarStyle('dark-content');
     }
     return (
-      <KeyboardAwareScrollView contentContainerStyle={{ width: '100%' }}>
-        <View style={styles.container}>
-          {this.modal_fail()}
-          {this.modal_success()}
-          <View style={styles.viewTitle}>
-            <Text style={styles.txtTitle}>Đăng nhập</Text>
-          </View>
-          <View style={styles.viewLogo}>
-            <Image source={Images.logo} style={styles.logo} />
-          </View>
-          <View style={styles.content}>
-            <AppInput
-              containerStyle={styles.containerStyle}
-              lableStyle={styles.txtLable}
-              style={styles.input}
-              label="Email"
-              value={this.state.email}
-              onChange={email => this.setState({ email })}
-            />
-            <BaseInput
-              label="Mật khẩu"
-              containerStyle={styles.containerStyle}
-              lableStyle={styles.txtLable}
-            >
-              <TextInput
-                autoCapitalize = 'none'
-                secureTextEntry={this.state.hidePassword}
-                style={[styles.input, { paddingRight: '17%' }]}
-                value={this.state.password}
-                onChangeText={(password) => this.setState({ password })}
+      this.state.isloading ?
+        <KeyboardAwareScrollView contentContainerStyle={{ width: '100%' }}>
+          <View style={styles.container}>
+            {this.modal_fail()}
+            {this.modal_success()}
+            <View style={styles.viewTitle}>
+              <Text style={styles.txtTitle}>Đăng nhập</Text>
+            </View>
+            <View style={styles.viewLogo}>
+              <Image source={Images.logo} style={styles.logo} />
+            </View>
+            <View style={styles.content}>
+              <AppInput
+                containerStyle={styles.containerStyle}
+                lableStyle={styles.txtLable}
+                style={styles.input}
+                label="Email"
+                value={this.state.email}
+                onChange={email => this.setState({ email })}
               />
-              <TouchableOpacity
-                onPress={() => this.setState({ hidePassword: (!this.state.hidePassword) })}
-                activeOpacity={.7}
-                style={styles.touchEye}
+              <BaseInput
+                label="Mật khẩu"
+                containerStyle={styles.containerStyle}
+                lableStyle={styles.txtLable}
               >
-                <Ionicons color="#97ADB6" name={this.state.hidePassword ? "ios-eye-off" : 'ios-eye'} size={25} />
+                <TextInput
+                  autoCapitalize='none'
+                  secureTextEntry={this.state.hidePassword}
+                  style={[styles.input, { paddingRight: '17%' }]}
+                  value={this.state.password}
+                  onChangeText={(password) => this.setState({ password })}
+                />
+                <TouchableOpacity
+                  onPress={() => this.setState({ hidePassword: (!this.state.hidePassword) })}
+                  activeOpacity={.7}
+                  style={styles.touchEye}
+                >
+                  <Ionicons color="#97ADB6" name={this.state.hidePassword ? "ios-eye-off" : 'ios-eye'} size={25} />
+                </TouchableOpacity>
+              </BaseInput>
+              <TouchableOpacity
+                style={styles.btnNext}
+                activeOpacity={.7}
+                onPress={() => this.handle_click_signin()}
+              >{
+                  this.props.Signin.fetching === true ?
+                    <ActivityIndicator color="white" size="small" />
+                    :
+                    <Text style={styles.txtBtnNext}>Đăng nhập</Text>
+                }
               </TouchableOpacity>
-            </BaseInput>
-            <TouchableOpacity
-              style={styles.btnNext}
-              activeOpacity={.7}
-              onPress={() => this.handle_click_signin()}
-            >{
-                this.props.Signin.fetching === true ?
-                  <ActivityIndicator color="white" size="small"/>
-                :
-                <Text style={styles.txtBtnNext}>Đăng nhập</Text>
-              }
-            </TouchableOpacity>
-            <View style={styles.viewBottom}>
-              <Text style={styles.txtBottom}>Bạn chưa có tài khoản ?  <Text style={styles.txNextBottom} onPress={() => this.props.navigation.navigate('SignUpScreen')}>Đăng ký</Text></Text>
+              <View style={styles.viewBottom}>
+                <Text style={styles.txtBottom}>Bạn chưa có tài khoản ?  <Text style={styles.txNextBottom} onPress={() => this.props.navigation.navigate('SignUpScreen')}>Đăng ký</Text></Text>
+              </View>
             </View>
           </View>
-        </View>
-      </KeyboardAwareScrollView>
+        </KeyboardAwareScrollView>
+        : null
     )
   }
 

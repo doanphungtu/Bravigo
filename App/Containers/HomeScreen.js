@@ -61,17 +61,16 @@ const _widthScale = (value) => { return value };
 class HomeScreen extends Component {
   constructor(props) {
     super(props);
-    this.map = React.createRef();
-    this.marker = React.createRef();
+    this.map = React.createRef(null);
+    this.marker = null;
     this.marker_place = [];
     this.marker_place_stop = [];
-    this.marker_car = React.createRef();
-    this.marker_animatedCamera = React.createRef();
-    this.timer = React.createRef();
+    this.marker_car = React.createRef(null);
+    this.marker_animatedCamera = React.createRef(null);
+    this.timer = React.createRef(null);
     this.interval = undefined;
 
-    this.bs1 = React.createRef();
-    this.bs2 = React.createRef();
+    this.bs1 = React.createRef(null);
 
     this.state = {
       name_place: '',
@@ -201,15 +200,15 @@ class HomeScreen extends Component {
         creatTimeFormatCar: ""
       });
     }
+    if (this.marker != null)
+      setTimeout(() => this.marker.showCallout(), 1);
   }
 
   componentDidUpdate(prevState, prevProps) {
-    if (this.state.name_place != '' && this.state.tab == 2) {
-      setTimeout(() => this.marker.showCallout(), 0);
-    } 
-    if (this.state.running && this.state.valueSlider >= 100) {
+    if (this.state.valueSlider >= 100) {
       clearInterval(this.interval);
-      this.setState({ running: false });
+      if (this.state.running)
+        this.setState({ running: false });
     }
   }
 
@@ -522,7 +521,6 @@ class HomeScreen extends Component {
               });
             }
             this.bs1.current.snapTo(1);
-            this.bs2.current.snapTo(1);
           }}
           style={styles.scaler}
           activeOpacity={.8}
@@ -547,7 +545,6 @@ class HomeScreen extends Component {
             this.callAPIGetUserInfor();
             clearInterval(this.state.interval);
             this.bs1.current.snapTo(2);
-            this.bs2.current.snapTo(1);
             this.props.navigation.openDrawer();
           }}
           style={styles.scaler}
@@ -688,14 +685,6 @@ class HomeScreen extends Component {
           renderContent={this.renderInnerHistory}
           renderHeader={this.renderHeaderHistory}
         />
-
-        <BottomSheet
-          ref={this.bs2}
-          initialSnap={0}
-          snapPoints={[0.4 * Metrics.screenHeight, 0]}
-          renderContent={this.renderInnerLocation}
-          renderHeader={this.renderHeaderLocation}
-        />
         {
           this.state.region.latitude != 0 ?
             < MapView
@@ -709,6 +698,7 @@ class HomeScreen extends Component {
               {
                 this.state.tab == 2 ?
                   <Marker
+                    key="aa"
                     ref={(ref) => { this.marker = ref }}
                     coordinate={this.state.marker_curren_location}
                   >
@@ -720,7 +710,8 @@ class HomeScreen extends Component {
                         <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}</Text>
                       </View>
                     </Callout>
-                  </Marker> : null
+                  </Marker>
+                  : null
               }
 
               {
@@ -864,7 +855,6 @@ class HomeScreen extends Component {
               }
             });
             clearInterval(this.state.interval);
-            this.bs2.current.snapTo(0);
             this.bs1.current.snapTo(2);
           }}
           activeOpacity={.5}
@@ -885,7 +875,7 @@ class HomeScreen extends Component {
             </View>
           </ScalerLocation>
         </TouchableOpacity>
-        {this._renderTab()}
+        { this._renderTab()}
 
       </View >
     )
