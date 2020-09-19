@@ -78,7 +78,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    bottom: 0.45 * Metrics.screenHeight,
+    bottom: 0.3 * Metrics.screenHeight,
     right: 0.03 * Metrics.screenHeight
   },
   viewHeaderLocation: {

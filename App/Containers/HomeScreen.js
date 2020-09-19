@@ -61,16 +61,16 @@ const _widthScale = (value) => { return value };
 class HomeScreen extends Component {
   constructor(props) {
     super(props);
-    this.map = React.createRef(null);
+    this.map = null;
     this.marker = null;
     this.marker_place = [];
     this.marker_place_stop = [];
-    this.marker_car = React.createRef(null);
-    this.marker_animatedCamera = React.createRef(null);
-    this.timer = React.createRef(null);
+    this.marker_car = null;
+    this.marker_animatedCamera = null;
+    this.timer = null;
     this.interval = undefined;
 
-    this.bs1 = React.createRef(null);
+    this.bs1 = React.createRef();
 
     this.state = {
       name_place: '',
@@ -285,11 +285,10 @@ class HomeScreen extends Component {
   _renderItemHistory(item, index) {
     return (
       <Touchable
-        // disabled={this.state.running}
         style={styles.viewItemInnerHistory}
         activeOpacity={.5}
         onPress={async () => {
-          await this.bs1.current.snapTo(2);
+          this.bs1.current.snapTo(0);
           await this.setState({
             data_animatedCamera:
             {
@@ -305,19 +304,23 @@ class HomeScreen extends Component {
               )
             }
           })
-          this.map.animateCamera({
-            center: {
-              latitude: Number(item.latitude),
-              longitude: Number(item.longitude)
+          if (this.map != null) {
+            this.map.animateCamera({
+              center: {
+                latitude: Number(item.latitude),
+                longitude: Number(item.longitude)
+              },
+              pitch: 10,
+              heading: 20,
+              altitude: 200,
+              zoom: 17
             },
-            pitch: 10,
-            heading: 20,
-            altitude: 200,
-            zoom: 17
-          },
-            100
-          );
-          this.marker_animatedCamera.showCallout()
+              100
+            );
+          }
+          if (this.marker_animatedCamera != null) {
+            this.marker_animatedCamera.showCallout()
+          }
         }}
       >
         <View style={styles.itemInnerLocation}>
@@ -515,10 +518,12 @@ class HomeScreen extends Component {
               this.state.dataPlace.map((marker, index) => {
                 MARKERS.push({ latitude: Number(marker.latitude), longitude: Number(marker.longitude) })
               })
-              this.map.fitToCoordinates(MARKERS, {
-                edgePadding: DEFAULT_PADDING,
-                animated: true,
-              });
+              if (this.map != null) {
+                this.map.fitToCoordinates(MARKERS, {
+                  edgePadding: DEFAULT_PADDING,
+                  animated: true,
+                });
+              }
             }
             this.bs1.current.snapTo(1);
           }}
@@ -540,11 +545,10 @@ class HomeScreen extends Component {
             this.setState({
               tab: 3,
               running: false,
-              // show_direction: false
             });
             this.callAPIGetUserInfor();
             clearInterval(this.state.interval);
-            this.bs1.current.snapTo(2);
+            this.bs1.current.snapTo(0);
             this.props.navigation.openDrawer();
           }}
           style={styles.scaler}
@@ -680,8 +684,8 @@ class HomeScreen extends Component {
 
         <BottomSheet
           ref={this.bs1}
-          initialSnap={2}
-          snapPoints={[Metrics.screenHeight, 0.6 * Metrics.screenHeight, 0]}
+          // initialSnap={1}
+          snapPoints={[0, Metrics.screenHeight]}
           renderContent={this.renderInnerHistory}
           renderHeader={this.renderHeaderHistory}
         />
@@ -855,7 +859,7 @@ class HomeScreen extends Component {
               }
             });
             clearInterval(this.state.interval);
-            this.bs1.current.snapTo(2);
+            this.bs1.current.snapTo(0);
           }}
           activeOpacity={.5}
         >
