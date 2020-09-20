@@ -121,14 +121,14 @@ export default StyleSheet.create({
   viewheaderInnerHistory: {
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    height: 170,
+    height: 110,
     backgroundColor: 'white',
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   itemInnerHistory: {
     backgroundColor: '#e0e0e0',
-    height: Metrics.screenHeight - 170,
+    height: Metrics.screenHeight - 110,
   },
   viewItemHeaderHistory: {
     flexDirection: 'row',

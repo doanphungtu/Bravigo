@@ -41,6 +41,7 @@ import { Colors, Metrics, Images } from '../Themes';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity as Touchable } from 'react-native-gesture-handler'
 import { get_current_date, get_current_hour } from '../Transforms/Function_Of_Tu';
+import SliderCustom from '../Components/SliderCustom';
 
 const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 const GOOGLE_MAPS_APIKEY = "AIzaSyD_x8kFDvxo9vFvzMMJ98m6u4KfVmI12dY";
@@ -395,53 +396,12 @@ class HomeScreen extends Component {
           </View>
         </CardView>
       </View>
-      <View style={styles.view_slider}>
-        <TouchableOpacity
-          style={styles.touch_slider}
-          onPress={() => {
-            this.setState({
-              running: !this.state.running
-            });
-            this.show_car(this.state.dataPlace);
-          }}
-        >
-          {this.state.running ?
-            <FontAwesome name="pause" size={18} color="grey" />
-            :
-            <FontAwesome name="play" size={20} color="grey" />
-          }
-        </TouchableOpacity>
-        <Slider
-          style={{ width: "65%" }}
-          value={this.state.valueSlider}
-          step={1}
-          minimumValue={0}
-          maximumValue={this.state.max_slider}
-          onValueChange={value => this.setState({ valueSlider: value })}
-          thumbTouchSize={{ width: 60, height: 60 }}
-          minimumTrackTintColor={Colors.main}
-          thumbImage={Images.car_slider}
-          thumbStyle={styles.thumb}
-        />
-        <TouchableOpacity
-          style={styles.touch_slider}
-          onPress={() => {
-            if (this.state.speed == 3)
-              this.setState({ speed: 1 });
-            else
-              this.setState({ speed: this.state.speed + 1 });
-            clearInterval(this.state.interval);
-            this.show_car(this.state.dataPlace);
-          }}
-        >
-          <Text style={styles.txt_touch_slider}>X{this.state.speed}</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   )
 
   renderInnerHistory = () => (
     <View style={styles.itemInnerHistory} >
+      <SliderCustom />
       {
         this.state.dataPlace.length ?
           <FlatList1
@@ -520,6 +480,7 @@ class HomeScreen extends Component {
                 });
               }
             }
+            this.state.tab != 1
             this.bs1.current.snapTo(1);
           }}
           style={styles.scaler}
@@ -651,22 +612,22 @@ class HomeScreen extends Component {
     //     this.setState({
     //       valueSlider: this.state.valueSlider + 1,
     //     })
-        // if (data[index]) {
-        //   const newCoordinate = {
-        //     latitude: Number(data[index].latitude),
-        //     longitude: Number(data[index].longitude)
-        //   };
-        //   this.setState({
-        //     namePlaceCar: data[index].namePlace,
-        //     creatTimeFormatCar: data[index].creatTimeFormat,
-        //     speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
-        //     timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
-        //   });
-        //   this.marker_car.showCallout();
-        //   this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
-        //   this.map.animateCamera({ center: newCoordinate }, 10);
-        // }
-      // }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
+    // if (data[index]) {
+    //   const newCoordinate = {
+    //     latitude: Number(data[index].latitude),
+    //     longitude: Number(data[index].longitude)
+    //   };
+    //   this.setState({
+    //     namePlaceCar: data[index].namePlace,
+    //     creatTimeFormatCar: data[index].creatTimeFormat,
+    //     speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
+    //     timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
+    //   });
+    //   this.marker_car.showCallout();
+    //   this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
+    //   this.map.animateCamera({ center: newCoordinate }, 10);
+    // }
+    // }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
     // }
   }
 

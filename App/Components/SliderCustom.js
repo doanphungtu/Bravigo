@@ -17,11 +17,11 @@ export default class SliderCustom extends Component {
         this.state = {
             running: false,
             valueSlider: 0,
-            max_slider: props.max_slider,
+            max_slider: 100,
             speed: 1
         }
     }
-    _getValueSlider () {
+    _getValueSlider() {
         return this.state.valueSlider;
     }
     start() {
@@ -94,7 +94,8 @@ export const styles = StyleSheet.create({
         height: 60,
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        backgroundColor: 'white'
     },
     touch_slider: {
         width: 0.175 * Metrics.screenWidth,
