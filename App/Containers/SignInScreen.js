@@ -31,8 +31,10 @@ class SignInScreen extends Component {
   constructor() {
     super();
     this.state = {
-      email: 'Chuctv@gmail.com',
-      password: 'Chuctv',
+      // email: 'Chuctv@gmail.com',
+      // password: 'Chuctv',
+      email: 'hungthang688@gmail.com',
+      password: 'Bravigo',
       hidePassword: false,
       show_modal_fail: false,
       show_modal_success: false,

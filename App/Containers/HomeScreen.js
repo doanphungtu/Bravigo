@@ -102,12 +102,14 @@ class HomeScreen extends Component {
         latitude: 0,
         longitude: 0,
         namePlace: '',
-        creatTimeFormat: ''
+        creatTimeFormat: '',
+        speed: 0,
+        timeToStop: "unknown"
       },
       namePlaceCar: '',
       creatTimeFormatCar: '',
       speedCar: '',
-      timeStopCar: '',
+      timeStopCar: "unknown",
     }
   }
 
@@ -278,13 +280,10 @@ class HomeScreen extends Component {
               latitude: item.latitude,
               longitude: item.longitude,
               namePlace: item.namePlace,
-              creatTimeFormat: (
-                item.creatTimeFormat + ' | ' + Math.round(100 * Number.parseFloat(item.speed)) / 100 + 'Km' +
-                (
-                  this.findPlaceVSPlaceStop(item) != -1 ?
-                    (' | ' + this.state.dataPlaceStop[this.findPlaceVSPlaceStop(item)].timeToStop + '\'') : ''
-                )
-              )
+              creatTimeFormat: item.creatTimeFormat,
+              speed: Math.round(100 * Number.parseFloat(item.speed)) / 100 + 'Km',
+              timeToStop: this.findPlaceVSPlaceStop(item) != -1 ?
+                + this.state.dataPlaceStop[this.findPlaceVSPlaceStop(item)].timeToStop : 'unknown'
             }
           })
           if (this.map != null) {
@@ -302,7 +301,7 @@ class HomeScreen extends Component {
             );
           }
           if (this.marker_animatedCamera != null) {
-            this.marker_animatedCamera.showCallout()
+            setTimeout(() => { this.marker_animatedCamera.showCallout() }, 1)
           }
         }}
       >
@@ -365,7 +364,9 @@ class HomeScreen extends Component {
                     latitude: 0,
                     longitude: 0,
                     namePlace: '',
-                    creatTimeFormat: ''
+                    creatTimeFormat: '',
+                    speed: 0,
+                    timeToStop: "unknown"
                   },
                   latitude_car: 0,
                 });
@@ -399,38 +400,6 @@ class HomeScreen extends Component {
           <Text style={{ fontSize: 16, alignSelf: 'center', textAlign: 'center', color: Colors.main, marginTop: 20 }}>Không tìm thấy điểm dừng nào</Text>
       }
       <View style={{ height: 54 }}></View>
-    </View>
-  )
-
-  renderInnerLocation = () => (
-    <View style={styles.viewInnerLocation}>
-      <View style={[styles.itemInnerLocation, { justifyContent: 'center', alignItems: 'center' }]}>
-        <View style={styles.viewIconItem}>
-          <MaterialIcons name="location-on" size={40} color={'blue'} />
-        </View>
-        <View style={{ width: Metrics.screenWidth - 60, paddingHorizontal: 10 }}>
-          <View>
-            <Text><Text style={{ fontWeight: 'bold' }}>Địa chỉ:</Text>{this.state.name_place}</Text>
-          </View>
-          <View>
-            <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
-          </View>
-          <View>
-            <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ:</Text> {Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km'}</Text>
-          </View>
-          <View>
-            <Text><Text style={{ fontWeight: 'bold' }}>Trạng thái:</Text> Xe đang chạy</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  )
-
-  renderHeaderLocation = () => (
-    <View
-      style={styles.viewHeaderLocation}
-    >
-      <Text style={styles.txtHeaderSheerLocation}>Thông tin địa chỉ</Text>
     </View>
   )
 
@@ -588,27 +557,25 @@ class HomeScreen extends Component {
     this.setState({ coords });
   }
 
-  show_car = async (valueSlider) => {
+  show_car = (valueSlider) => {
     const data = this.state.dataPlace;
-    if (data.length) {
-      if (valueSlider <= 1)
-        this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
-      let index = Math.floor(valueSlider * data.length / 100);
-      if (data[index]) {
-        const newCoordinate = {
-          latitude: Number(data[index].latitude),
-          longitude: Number(data[index].longitude)
-        };
-        this.setState({
-          namePlaceCar: data[index].namePlace,
-          creatTimeFormatCar: data[index].creatTimeFormat,
-          speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
-          timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
-        });
-        await this.marker_car.showCallout();
-        await this.marker_car.animateMarkerToCoordinate(newCoordinate, 50)
-        await this.map.animateCamera({ center: newCoordinate }, 10);
-      }
+    let index = Math.floor(valueSlider * data.length / 100);
+    if (data[index]) {
+      const newCoordinate = {
+        latitude: Number(data[index].latitude),
+        longitude: Number(data[index].longitude)
+      };
+      this.setState({
+        latitude_car: Number(data[index].latitude),
+        longitude_car: Number(data[index].longitude),
+        namePlaceCar: data[index].namePlace,
+        creatTimeFormatCar: data[index].creatTimeFormat,
+        speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
+        timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : 'unknown'
+      });
+      setTimeout(() => { this.marker_car.showCallout() }, 1)
+      this.marker_car.animateMarkerToCoordinate(newCoordinate, 50)
+      this.map.animateCamera({ center: newCoordinate }, 10);
     }
   }
 
@@ -677,15 +644,16 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
-                      title={this.state.namePlaceCar}
-                      description={
-                        this.state.creatTimeFormatCar.toString() +
-                        ' | ' +
-                        this.state.speedCar +
-                        (this.state.timeStopCar != '' ? ' | ' : '') + this.state.timeStopCar + (this.state.timeStopCar != '' ? '\'' : '')
-                      }
+
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
+                      <Callout style={{ height: 100 }} >
+                        <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
+                          <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.namePlaceCar}</Text>
+                          <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
+                          <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speedCar)) / 100 + 'Km/h'}</Text>
+                        </View>
+                      </Callout>
                     </Marker>
                   )
                   : null
@@ -696,18 +664,20 @@ class HomeScreen extends Component {
                   this.state.tab == 1 ?
                     <Marker
                       ref={(ref) => { this.marker_place[this.state.dataPlace.length - 1] = ref }}
-                      // tracksViewChanges={false}
                       key={'a0'}
                       coordinate={{
                         latitude: Number(this.state.dataPlace[this.state.dataPlace.length - 1].latitude),
                         longitude: Number(this.state.dataPlace[this.state.dataPlace.length - 1].longitude)
                       }}
-                      title={this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}
-                      description={this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat.toString()}
                     >
-                      {
-                        <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
-                      }
+                      <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
+                      <Callout style={{ height: 100 }} >
+                        <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
+                          <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}</Text>
+                          <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat}</Text>
+                          <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[this.state.dataPlace.length - 1].speed)) / 100 + 'Km/h'}</Text>
+                        </View>
+                      </Callout>
                     </Marker>
                     : null
                   : null
@@ -728,6 +698,13 @@ class HomeScreen extends Component {
                         description={this.state.dataPlace[0].creatTimeFormat.toString()}
                       >
                         <Image source={Images.location_start} style={{ height: 40, width: 40 }} />
+                        <Callout style={{ height: 100 }} >
+                          <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
+                            <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.dataPlace[0].namePlace}</Text>
+                            <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.dataPlace[0].creatTimeFormat}</Text>
+                            <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[0].speed)) / 100 + 'Km/h'}</Text>
+                          </View>
+                        </Callout>
                       </Marker>
                     )
                     : null
@@ -737,32 +714,42 @@ class HomeScreen extends Component {
                 this.state.data_animatedCamera.latitude != 0 ?
                   <Marker
                     ref={(ref) => { this.marker_animatedCamera = ref }}
-                    // tracksViewChanges={false}
                     coordinate={{
                       latitude: Number(this.state.data_animatedCamera.latitude),
                       longitude: Number(this.state.data_animatedCamera.longitude)
                     }}
                     title={this.state.data_animatedCamera.namePlace}
                     description={this.state.data_animatedCamera.creatTimeFormat.toString()}
-                  /> : null
+                  >
+                    <Callout style={{ height: 100 }} >
+                      <View style={{ width: Metrics.screenWidth - 10, height: '100%', justifyContent: 'center' }}>
+                        <Text numberOfLines={3} ><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.data_animatedCamera.namePlace}</Text>
+                        <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.data_animatedCamera.creatTimeFormat}</Text>
+                        <Text><Text style={{ fontWeight: 'bold' }}>{this.state.data_animatedCamera.timeToStop == "unknown" ? 'Tốc độ:' : 'Thời lượng dừng:'}</Text>{this.state.data_animatedCamera.timeToStop == "unknown" ? this.state.data_animatedCamera.speed : this.state.data_animatedCamera.timeToStop}</Text>
+                      </View>
+                    </Callout>
+                  </Marker> : null
               }
               {
                 this.state.tab == 1 && this.state.dataPlaceStop.length ? (
                   this.state.dataPlaceStop.map((marker, index) => (
                     <Marker
                       ref={(ref) => { this.marker_place_stop[index] = ref }}
-                      // tracksViewChanges={false}
                       key={index.toString()}
                       coordinate={{
                         latitude: Number(marker.latitude),
                         longitude: Number(marker.longitude)
                       }}
-                      title={marker.namePlace}
                       description={marker.creatTimeFormat.toString()}
                     >
-                      {
-                        <Image source={Images.stop} style={{ height: 15, width: 15 }} />
-                      }
+                      <Image source={Images.stop} style={{ height: 15, width: 15 }} />
+                      <Callout style={{ height: 100 }} >
+                        <View style={{ width: Metrics.screenWidth - 10, height: '100%', justifyContent: 'center' }}>
+                          <Text numberOfLines={3} ><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{marker.namePlace}</Text>
+                          <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {marker.creatTimeFormat}</Text>
+                          <Text><Text style={{ fontWeight: 'bold' }}>Thời lượng dừng:</Text>{marker.timeToStop}'</Text>
+                        </View>
+                      </Callout>
                     </Marker>
                   ))
                 ) : null
@@ -803,7 +790,9 @@ class HomeScreen extends Component {
                 latitude: 0,
                 longitude: 0,
                 namePlace: '',
-                creatTimeFormat: ''
+                creatTimeFormat: '',
+                speed: 0,
+                timeToStop: "unknown"
               }
             });
             this.sliderRef._setRunning(false);
