@@ -81,7 +81,7 @@ const SwitchNav = createSwitchNavigator({
 },
   {
     headerMode: 'none',
-    initialRouteName: 'SignInScreen',
+    initialRouteName: 'test',
     transitionConfig,
   }
 )

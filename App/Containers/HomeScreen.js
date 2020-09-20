@@ -68,10 +68,7 @@ class HomeScreen extends Component {
     this.marker_car = null;
     this.marker_animatedCamera = null;
     this.timer = null;
-    this.interval = undefined;
-
     this.bs1 = React.createRef();
-
     this.state = {
       name_place: '',
       speed_car: '',
@@ -100,8 +97,7 @@ class HomeScreen extends Component {
       speed: 1,
       latitude_car: 0,
       longitude_car: 0,
-      interval: "",
-      // timmer: '',
+      interval: null,
       car_rotation: 0,
       coords: [],
       coordColor: [],
@@ -204,13 +200,13 @@ class HomeScreen extends Component {
       setTimeout(() => this.marker.showCallout(), 1);
   }
 
-  componentDidUpdate(prevState, prevProps) {
-    if (this.state.valueSlider >= 100) {
-      clearInterval(this.interval);
-      if (this.state.running)
-        this.setState({ running: false });
-    }
-  }
+  // componentDidUpdate(prevState, prevProps) {
+  //   if (this.state.valueSlider >= 100) {
+  //     clearInterval(this.interval);
+  //     if (this.state.running)
+  //       this.setState({ running: false });
+  //   }
+  // }
 
   async callAPIGetUserInfor() {
     const idDevice = await AsyncStorage.getItem("idDevice");
@@ -605,7 +601,11 @@ class HomeScreen extends Component {
     const token = await AsyncStorage.getItem("token");
     const start = moment(this.state.dateStart + " 00:01").format('X');
     const end = moment(this.state.dateStart + " 23:59").format('X');
-    this.props.get_list_place_stop(end, start, idDevice, token);
+    try {
+      this.props.get_list_place_stop(end, start, idDevice, token);
+    } catch (e) {
+      console.tron.log(e)
+    }
   }
 
   async call_api_get_list_place() {
@@ -613,14 +613,22 @@ class HomeScreen extends Component {
     const token = await AsyncStorage.getItem("token");
     const start = moment(this.state.dateStart + " 00:01").format('X');
     const end = moment(this.state.dateStart + " 23:59").format('X');
-    this.props.get_list_place(end, start, idDevice, token);
+    try {
+      this.props.get_list_place(end, start, idDevice, token);
+    } catch (e) {
+      console.tron.log(e)
+    }
   }
 
   async call_api_get_list_place_first() {
     const idDevice = await AsyncStorage.getItem("idDevice");
     const token = await AsyncStorage.getItem("token");
     const end = moment(get_current_date() + " 23:59").format('X');
-    this.props.getCurentLocation(end, "0", idDevice, token);
+    try {
+      this.props.getCurentLocation(end, "0", idDevice, token);
+    } catch (e) {
+      console.tron.log(e)
+    }
   }
 
   show_direction = (data) => {
@@ -638,26 +646,27 @@ class HomeScreen extends Component {
     if (data.length > 0) {
       if (this.state.valueSlider <= 1)
         this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
-      this.interval = setInterval(() => {
+      let interval = setInterval(() => {
+        this.setState({ interval })
         let index = Math.floor(this.state.valueSlider * data.length / 100);
         this.setState({
           valueSlider: this.state.valueSlider + 1,
         })
-        if (data[index]) {
-          const newCoordinate = {
-            latitude: Number(data[index].latitude),
-            longitude: Number(data[index].longitude)
-          };
-          this.setState({
-            namePlaceCar: data[index].namePlace,
-            creatTimeFormatCar: data[index].creatTimeFormat,
-            speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
-            timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
-          });
-          this.marker_car.showCallout();
-          this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
-          this.map.animateCamera({ center: newCoordinate }, 10);
-        }
+        // if (data[index]) {
+        //   const newCoordinate = {
+        //     latitude: Number(data[index].latitude),
+        //     longitude: Number(data[index].longitude)
+        //   };
+        //   this.setState({
+        //     namePlaceCar: data[index].namePlace,
+        //     creatTimeFormatCar: data[index].creatTimeFormat,
+        //     speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
+        //     timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
+        //   });
+        //   this.marker_car.showCallout();
+        //   this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
+        //   this.map.animateCamera({ center: newCoordinate }, 10);
+        // }
       }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
     }
   }
