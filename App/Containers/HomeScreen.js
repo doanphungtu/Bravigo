@@ -27,7 +27,6 @@ import DatePicker from '../Transforms/DatePicker/DatePicker'
 import CardView from 'react-native-cardview'
 import Modal from 'react-native-modal'
 import moment from 'moment'
-import Slider from '../Config/Slider.js'
 
 // Add Actions - replace 'Your' with whatever your reducer is called :)
 // import YourActions from '../Redux/YourRedux'
@@ -92,13 +91,8 @@ class HomeScreen extends Component {
         latitude: 0,
         longitude: 0
       },
-      valueSlider: 0,
-      max_slider: 100,
-      running: false,
-      speed: 1,
       latitude_car: 0,
       longitude_car: 0,
-      interval: null,
       car_rotation: 0,
       coords: [],
       coordColor: [],
@@ -200,14 +194,6 @@ class HomeScreen extends Component {
     if (this.marker != null)
       setTimeout(() => this.marker.showCallout(), 1);
   }
-
-  // componentDidUpdate(prevState, prevProps) {
-  //   if (this.state.valueSlider >= 100) {
-  //     clearInterval(this.interval);
-  //     if (this.state.running)
-  //       this.setState({ running: false });
-  //   }
-  // }
 
   async callAPIGetUserInfor() {
     const idDevice = await AsyncStorage.getItem("idDevice");
@@ -371,9 +357,9 @@ class HomeScreen extends Component {
               style={styles.btn_bottom}
               activeOpacity={.7}
               onPress={() => {
+                this.sliderRef._setRunning(false);
                 this.setState({
                   show_direction: true,
-                  running: false,
                   valueSlider: 0,
                   data_animatedCamera: {
                     latitude: 0,
@@ -401,7 +387,7 @@ class HomeScreen extends Component {
 
   renderInnerHistory = () => (
     <View style={styles.itemInnerHistory} >
-      <SliderCustom />
+      <SliderCustom ref={refs => this.sliderRef = refs} callback={this.show_car} />
       {
         this.state.dataPlace.length ?
           <FlatList1
@@ -500,10 +486,10 @@ class HomeScreen extends Component {
           onPress={() => {
             this.setState({
               tab: 3,
-              running: false,
             });
+            this.sliderRef._setRunning(false);
             this.callAPIGetUserInfor();
-            clearInterval(this.state.interval);
+            this.sliderRef._clearInterval();
             this.bs1.current.snapTo(0);
             this.props.navigation.openDrawer();
           }}
@@ -602,33 +588,28 @@ class HomeScreen extends Component {
     this.setState({ coords });
   }
 
-  show_car = (data) => {
-    // if (data.length > 0) {
-    //   if (this.state.valueSlider <= 1)
-    //     this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
-    //   let interval = setInterval(() => {
-    //     this.setState({ interval })
-    //     let index = Math.floor(this.state.valueSlider * data.length / 100);
-    //     this.setState({
-    //       valueSlider: this.state.valueSlider + 1,
-    //     })
-    // if (data[index]) {
-    //   const newCoordinate = {
-    //     latitude: Number(data[index].latitude),
-    //     longitude: Number(data[index].longitude)
-    //   };
-    //   this.setState({
-    //     namePlaceCar: data[index].namePlace,
-    //     creatTimeFormatCar: data[index].creatTimeFormat,
-    //     speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
-    //     timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
-    //   });
-    //   this.marker_car.showCallout();
-    //   this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
-    //   this.map.animateCamera({ center: newCoordinate }, 10);
-    // }
-    // }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
-    // }
+  show_car = async (valueSlider) => {
+    const data = this.state.dataPlace;
+    if (data.length) {
+      if (valueSlider <= 1)
+        this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
+      let index = Math.floor(valueSlider * data.length / 100);
+      if (data[index]) {
+        const newCoordinate = {
+          latitude: Number(data[index].latitude),
+          longitude: Number(data[index].longitude)
+        };
+        this.setState({
+          namePlaceCar: data[index].namePlace,
+          creatTimeFormatCar: data[index].creatTimeFormat,
+          speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
+          timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : ''
+        });
+        await this.marker_car.showCallout();
+        await this.marker_car.animateMarkerToCoordinate(newCoordinate, 50)
+        await this.map.animateCamera({ center: newCoordinate }, 10);
+      }
+    }
   }
 
   render() {
@@ -696,7 +677,6 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
-                      // tracksViewChanges={false}
                       title={this.state.namePlaceCar}
                       description={
                         this.state.creatTimeFormatCar.toString() +
@@ -817,7 +797,6 @@ class HomeScreen extends Component {
             this.setState({
               tab: 2,
               title: 'Vị trí hiện tại',
-              running: false,
               show_direction: false,
               latitude_car: 0,
               data_animatedCamera: {
@@ -827,6 +806,7 @@ class HomeScreen extends Component {
                 creatTimeFormat: ''
               }
             });
+            this.sliderRef._setRunning(false);
             clearInterval(this.state.interval);
             this.bs1.current.snapTo(0);
           }}

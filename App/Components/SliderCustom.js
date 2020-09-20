@@ -1,14 +1,14 @@
-import React, { Component, PureComponent } from 'react'
+import React, { Component } from 'react'
 import {
-    ScrollView, Text, KeyboardAvoidingView,
-    TouchableOpacity,
+    Text,
+    // TouchableOpacity,
     View
 } from 'react-native'
-import { connect } from 'react-redux'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { StyleSheet } from 'react-native';
 import { Colors, Metrics, Images } from '../Themes';
 import Slider from '../Config/Slider';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export default class SliderCustom extends Component {
     constructor(props) {
@@ -21,13 +21,17 @@ export default class SliderCustom extends Component {
             speed: 1
         }
     }
-    _getValueSlider() {
-        return this.state.valueSlider;
+    _setRunning(data) {
+        this.setState({ running: data })
+    }
+    _clearInterval(){
+        clearInterval(this.interval);
     }
     start() {
         clearInterval(this.interval);
         this.interval = setInterval(() => {
             if (this.state.running) {
+                this.props.callback(this.state.valueSlider);
                 if (this.state.valueSlider < this.state.max_slider) {
                     this.setState({
                         valueSlider: this.state.valueSlider + 1,
