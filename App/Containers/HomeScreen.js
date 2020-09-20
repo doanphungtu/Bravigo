@@ -412,7 +412,6 @@ class HomeScreen extends Component {
           }
         </TouchableOpacity>
         <Slider
-          // disabled={this.state.running ? true : false}
           style={{ width: "65%" }}
           value={this.state.valueSlider}
           step={1}
@@ -643,15 +642,15 @@ class HomeScreen extends Component {
   }
 
   show_car = (data) => {
-    if (data.length > 0) {
-      if (this.state.valueSlider <= 1)
-        this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
-      let interval = setInterval(() => {
-        this.setState({ interval })
-        let index = Math.floor(this.state.valueSlider * data.length / 100);
-        this.setState({
-          valueSlider: this.state.valueSlider + 1,
-        })
+    // if (data.length > 0) {
+    //   if (this.state.valueSlider <= 1)
+    //     this.setState({ latitude_car: Number(data[0].latitude), longitude_car: Number(data[0].longitude) });
+    //   let interval = setInterval(() => {
+    //     this.setState({ interval })
+    //     let index = Math.floor(this.state.valueSlider * data.length / 100);
+    //     this.setState({
+    //       valueSlider: this.state.valueSlider + 1,
+    //     })
         // if (data[index]) {
         //   const newCoordinate = {
         //     latitude: Number(data[index].latitude),
@@ -667,8 +666,8 @@ class HomeScreen extends Component {
         //   this.marker_car.animateMarkerToCoordinate(newCoordinate, 50);
         //   this.map.animateCamera({ center: newCoordinate }, 10);
         // }
-      }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
-    }
+      // }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 700 : 50)
+    // }
   }
 
   render() {
