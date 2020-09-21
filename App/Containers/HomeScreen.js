@@ -41,6 +41,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity as Touchable } from 'react-native-gesture-handler'
 import { get_current_date, get_current_hour } from '../Transforms/Function_Of_Tu';
 import SliderCustom from '../Components/SliderCustom';
+import Axios from 'axios';
+import { BASE_URL } from '../Config/UrlConfig';
 
 const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 const GOOGLE_MAPS_APIKEY = "AIzaSyD_x8kFDvxo9vFvzMMJ98m6u4KfVmI12dY";
@@ -110,6 +112,7 @@ class HomeScreen extends Component {
       creatTimeFormatCar: '',
       speedCar: '',
       timeStopCar: "unknown",
+      statusCar: 'unknown'
     }
   }
 
@@ -388,7 +391,7 @@ class HomeScreen extends Component {
 
   renderInnerHistory = () => (
     <View style={styles.itemInnerHistory} >
-      <SliderCustom ref={refs => this.sliderRef = refs} callback={this.show_car} />
+      <SliderCustom enable={this.state.dataPlace.length} ref={refs => this.sliderRef = refs} callback={this.show_car} />
       {
         this.state.dataPlace.length ?
           <FlatList1
@@ -511,6 +514,17 @@ class HomeScreen extends Component {
     );
   }
 
+  callApiGetStatusCar(idDevice) {
+    Axios
+      .get(
+        `${BASE_URL}/api/checkStatusCar?idDevice=${idDevice}`,
+      )
+      .then((res) => { this.setState({ statusCar: res.data.status }) })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
   async call_api_get_list_place_stop() {
     const idDevice = await AsyncStorage.getItem("idDevice");
     const token = await AsyncStorage.getItem("token");
@@ -541,6 +555,7 @@ class HomeScreen extends Component {
     const end = moment(get_current_date() + " 23:59").format('X');
     try {
       this.props.getCurentLocation(end, "0", idDevice, token);
+      this.callApiGetStatusCar(idDevice);
     } catch (e) {
       console.tron.log(e)
     }
@@ -624,11 +639,12 @@ class HomeScreen extends Component {
                     coordinate={this.state.marker_curren_location}
                   >
                     <Image source={Images.location_car} style={{ height: 40, width: 40 }} />
-                    <Callout style={{ height: 100 }} >
+                    <Callout style={{ height: 120 }} >
                       <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
                         <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.name_place}</Text>
                         <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
                         <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}</Text>
+                        <Text><Text style={{ fontWeight: 'bold' }}>Trạng thái: </Text>{this.state.statusCar == true ? "Đang di chuyển" : "Đang dừng"}</Text>
                       </View>
                     </Callout>
                   </Marker>

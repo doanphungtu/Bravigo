@@ -24,7 +24,7 @@ export default class SliderCustom extends Component {
     _setRunning(data) {
         this.setState({ running: data })
     }
-    _clearInterval(){
+    _clearInterval() {
         clearInterval(this.interval);
     }
     start() {
@@ -52,7 +52,8 @@ export default class SliderCustom extends Component {
                         this.setState({
                             running: !this.state.running,
                         });
-                        this.start();
+                        if (this.props.enable)
+                            this.start();
                     }}
                 >
                     {this.state.running ?
@@ -82,7 +83,8 @@ export default class SliderCustom extends Component {
                         else
                             speed += 1
                         await this.setState({ speed });
-                        this.start();
+                        if (this.props.enable)
+                            this.start();
                     }}
                 >
                     <Text style={styles.txt_touch_slider}>X{this.state.speed}</Text>
