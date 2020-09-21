@@ -421,6 +421,7 @@ class HomeScreen extends Component {
 
         <TouchableOpacity
           onPress={() => {
+            this.bs1.current.snapTo(1);
             this.setState({
               tab: 1,
               title: 'Lịch sử',
@@ -438,8 +439,6 @@ class HomeScreen extends Component {
                 });
               }
             }
-            this.state.tab != 1
-            this.bs1.current.snapTo(1);
           }}
           style={styles.scaler}
           activeOpacity={.8}
@@ -458,6 +457,7 @@ class HomeScreen extends Component {
           onPress={() => {
             this.setState({
               tab: 3,
+              show_direction: false
             });
             this.sliderRef._setRunning(false);
             this.callAPIGetUserInfor();
@@ -812,7 +812,7 @@ class HomeScreen extends Component {
               }
             });
             this.sliderRef._setRunning(false);
-            clearInterval(this.state.interval);
+            this.sliderRef._clearInterval();
             this.bs1.current.snapTo(0);
           }}
           activeOpacity={.5}

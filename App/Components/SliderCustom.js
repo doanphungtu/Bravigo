@@ -41,7 +41,7 @@ export default class SliderCustom extends Component {
                     this.setState({ running: false });
                 }
             }
-        }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 800 : 100)
+        }, this.state.speed == 1 ? 1500 : this.state.speed == 2 ? 1000 : 500)
     }
     render() {
         return (
