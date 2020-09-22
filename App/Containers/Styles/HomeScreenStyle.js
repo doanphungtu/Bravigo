@@ -272,5 +272,23 @@ export default StyleSheet.create({
     height: 30,
     borderRadius: 15,
     backgroundColor: "#c63f17"
+  },
+  callout: {
+    // height: 140
+    flex: 1,
+    width: 3 * Metrics.screenWidth / 4,
+    position: 'absolute'
+  },
+  txtCallout: {
+    fontSize: 16
+  },
+  txtCalloutBold: {
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  viewCallout: {
+    width: 3 * Metrics.screenWidth / 4,
+    height: '100%',
+    justifyContent: 'center',
   }
 })

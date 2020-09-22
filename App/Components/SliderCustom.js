@@ -49,6 +49,8 @@ export default class SliderCustom extends Component {
                 <TouchableOpacity
                     style={styles.touch_slider}
                     onPress={() => {
+                        if(this.state.running==false)
+                            this.props.closeBottomsheet();
                         this.setState({
                             running: !this.state.running,
                         });

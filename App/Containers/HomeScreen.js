@@ -197,7 +197,7 @@ class HomeScreen extends Component {
       });
     }
     if (this.marker != null)
-      setTimeout(() => this.marker.showCallout(), 1);
+      setTimeout(() => this.marker.showCallout(), 0);
   }
 
   async callAPIGetUserInfor() {
@@ -304,7 +304,7 @@ class HomeScreen extends Component {
             );
           }
           if (this.marker_animatedCamera != null) {
-            setTimeout(() => { this.marker_animatedCamera.showCallout() }, 1)
+            setTimeout(() => { this.marker_animatedCamera.showCallout() }, 0)
           }
         }}
       >
@@ -391,7 +391,7 @@ class HomeScreen extends Component {
 
   renderInnerHistory = () => (
     <View style={styles.itemInnerHistory} >
-      <SliderCustom enable={this.state.dataPlace.length} ref={refs => this.sliderRef = refs} callback={this.show_car} />
+      <SliderCustom enable={this.state.dataPlace.length} ref={refs => this.sliderRef = refs} callback={this.show_car} closeBottomsheet={this.closeBottomsheet} />
       {
         this.state.dataPlace.length ?
           <FlatList1
@@ -588,10 +588,14 @@ class HomeScreen extends Component {
         speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
         timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : 'unknown'
       });
-      setTimeout(() => { this.marker_car.showCallout() }, 1)
+      setTimeout(() => { this.marker_car.showCallout() }, 0)
       this.marker_car.animateMarkerToCoordinate(newCoordinate, 50)
       this.map.animateCamera({ center: newCoordinate }, 10);
     }
+  }
+
+  closeBottomsheet = () => {
+    this.bs1.current.snapTo(0);
   }
 
   render() {
@@ -639,12 +643,12 @@ class HomeScreen extends Component {
                     coordinate={this.state.marker_curren_location}
                   >
                     <Image source={Images.location_car} style={{ height: 40, width: 40 }} />
-                    <Callout style={{ height: 120 }} >
-                      <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
-                        <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.name_place}</Text>
-                        <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
-                        <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}</Text>
-                        <Text><Text style={{ fontWeight: 'bold' }}>Trạng thái: </Text>{this.state.statusCar == true ? "Đang di chuyển" : "Đang dừng"}</Text>
+                    <Callout style={styles.callout}>
+                      <View style={styles.viewCallout}>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.name_place}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.creatTimeFormatCar}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Trạng thái: </Text>{this.state.statusCar == true ? "Đang bật" : "Đang tắt"}</Text>
                       </View>
                     </Callout>
                   </Marker>
@@ -663,11 +667,11 @@ class HomeScreen extends Component {
 
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
-                      <Callout style={{ height: 100 }} >
-                        <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
-                          <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.namePlaceCar}</Text>
-                          <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.creatTimeFormatCar}</Text>
-                          <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speedCar)) / 100 + 'Km/h'}</Text>
+                      <Callout style={styles.callout} >
+                        <View style={styles.viewCallout}>
+                          <Text style={styles.txtCallout} ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.namePlaceCar}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.creatTimeFormatCar}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speedCar)) / 100 + 'Km/h'}</Text>
                         </View>
                       </Callout>
                     </Marker>
@@ -687,11 +691,11 @@ class HomeScreen extends Component {
                       }}
                     >
                       <Image source={Images.location_end} style={{ height: 40, width: 40 }} />
-                      <Callout style={{ height: 100 }} >
-                        <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
-                          <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}</Text>
-                          <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat}</Text>
-                          <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[this.state.dataPlace.length - 1].speed)) / 100 + 'Km/h'}</Text>
+                      <Callout style={styles.callout} >
+                        <View style={styles.viewCallout}>
+                          <Text style={styles.txtCallout} ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[this.state.dataPlace.length - 1].speed)) / 100 + 'Km/h'}</Text>
                         </View>
                       </Callout>
                     </Marker>
@@ -714,11 +718,11 @@ class HomeScreen extends Component {
                         description={this.state.dataPlace[0].creatTimeFormat.toString()}
                       >
                         <Image source={Images.location_start} style={{ height: 40, width: 40 }} />
-                        <Callout style={{ height: 100 }} >
-                          <View style={{ width: Metrics.screenWidth, height: '100%', justifyContent: 'center' }}>
-                            <Text numberOfLines={3}><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.dataPlace[0].namePlace}</Text>
-                            <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.dataPlace[0].creatTimeFormat}</Text>
-                            <Text><Text style={{ fontWeight: 'bold' }}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[0].speed)) / 100 + 'Km/h'}</Text>
+                        <Callout style={styles.callout} >
+                          <View style={styles.viewCallout}>
+                            <Text style={styles.txtCallout} ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.dataPlace[0].namePlace}</Text>
+                            <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.dataPlace[0].creatTimeFormat}</Text>
+                            <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[0].speed)) / 100 + 'Km/h'}</Text>
                           </View>
                         </Callout>
                       </Marker>
@@ -737,11 +741,11 @@ class HomeScreen extends Component {
                     title={this.state.data_animatedCamera.namePlace}
                     description={this.state.data_animatedCamera.creatTimeFormat.toString()}
                   >
-                    <Callout style={{ height: 100 }} >
-                      <View style={{ width: Metrics.screenWidth - 10, height: '100%', justifyContent: 'center' }}>
-                        <Text numberOfLines={3} ><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{this.state.data_animatedCamera.namePlace}</Text>
-                        <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {this.state.data_animatedCamera.creatTimeFormat}</Text>
-                        <Text><Text style={{ fontWeight: 'bold' }}>{this.state.data_animatedCamera.timeToStop == "unknown" ? 'Tốc độ:' : 'Thời lượng dừng:'}</Text>{this.state.data_animatedCamera.timeToStop == "unknown" ? this.state.data_animatedCamera.speed : this.state.data_animatedCamera.timeToStop}</Text>
+                    <Callout style={styles.callout} >
+                      <View style={styles.viewCallout}>
+                        <Text style={styles.txtCallout}  ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.data_animatedCamera.namePlace}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.data_animatedCamera.creatTimeFormat}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>{this.state.data_animatedCamera.timeToStop == "unknown" ? 'Tốc độ: ' : 'Thời lượng dừng: '}</Text>{this.state.data_animatedCamera.timeToStop == "unknown" ? this.state.data_animatedCamera.speed : this.state.data_animatedCamera.timeToStop}</Text>
                       </View>
                     </Callout>
                   </Marker> : null
@@ -759,11 +763,11 @@ class HomeScreen extends Component {
                       description={marker.creatTimeFormat.toString()}
                     >
                       <Image source={Images.stop} style={{ height: 15, width: 15 }} />
-                      <Callout style={{ height: 100 }} >
-                        <View style={{ width: Metrics.screenWidth - 10, height: '100%', justifyContent: 'center' }}>
-                          <Text numberOfLines={3} ><Text style={{ fontWeight: 'bold' }}>Địa điểm: </Text>{marker.namePlace}</Text>
-                          <Text><Text style={{ fontWeight: 'bold' }}>Thời gian:</Text> {marker.creatTimeFormat}</Text>
-                          <Text><Text style={{ fontWeight: 'bold' }}>Thời lượng dừng:</Text>{marker.timeToStop}'</Text>
+                      <Callout style={styles.callout}>
+                        <View style={styles.viewCallout}>
+                          <Text style={styles.txtCallout}  ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{marker.namePlace}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{marker.creatTimeFormat}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời lượng dừng: </Text>{marker.timeToStop}'</Text>
                         </View>
                       </Callout>
                     </Marker>
