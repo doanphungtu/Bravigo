@@ -137,6 +137,7 @@ class HomeScreen extends Component {
       if (props.data_get_list_place.fetching === false && data_get_list_place) {
         if (data_get_list_place.data.success) {
           this.fitAllMarkers(data_get_list_place.data.data);
+          this.sliderRef._setMaxSlider(data_get_list_place.data.data.length || 1);
         } else {
           this.setState({ dataPlace: [] })
         }
@@ -165,6 +166,11 @@ class HomeScreen extends Component {
       // this.call_api_get_list_place_stop();
     })
   }
+
+  // componentDidUpdate(prevProps, prevState) {
+  //   if (this.marker != null)
+  //     setTimeout(() => this.marker.showCallout(), 0);
+  // }
 
   get_currents_location_1(data) {
     if (data) {
@@ -391,7 +397,7 @@ class HomeScreen extends Component {
   )
 
   renderInnerHistory = () => (
-    <View style={styles.itemInnerHistory} >
+    <View style={styles.itemInnerHistory}>
       <SliderCustom enable={this.state.dataPlace.length} ref={refs => this.sliderRef = refs} callback={this.show_car} closeBottomsheet={this.closeBottomsheet} />
       {
         this.state.dataPlace.length ?
@@ -575,7 +581,7 @@ class HomeScreen extends Component {
 
   show_car = (valueSlider) => {
     const data = this.state.dataPlace;
-    let index = Math.floor(valueSlider * data.length / 100);
+    let index = valueSlider;
     if (data[index]) {
       const newCoordinate = {
         latitude: Number(data[index].latitude),

@@ -12,20 +12,24 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export default class SliderCustom extends Component {
     constructor(props) {
+        console.tron.log("aaa", props.max_slider);
         super(props);
         this.interval = null;
         this.state = {
             running: false,
             valueSlider: 0,
-            max_slider: 100,
+            max_slider: 1,
             speed: 1
         }
     }
     _setRunning(data) {
-        this.setState({ running: data })
+        this.setState({ running: data });
     }
     _clearInterval() {
         clearInterval(this.interval);
+    }
+    _setMaxSlider(value) {
+        this.setState({ max_slider: value });
     }
     start() {
         clearInterval(this.interval);
@@ -49,7 +53,7 @@ export default class SliderCustom extends Component {
                 <TouchableOpacity
                     style={styles.touch_slider}
                     onPress={() => {
-                        if(this.state.running==false)
+                        if (this.state.running == false)
                             this.props.closeBottomsheet();
                         this.setState({
                             running: !this.state.running,
