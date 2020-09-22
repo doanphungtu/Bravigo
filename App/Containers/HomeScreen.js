@@ -159,6 +159,7 @@ class HomeScreen extends Component {
 
   componentDidMount() {
     this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
+      this.callAPIGetUserInfor();
       this.call_api_get_list_place_first();
       // this.call_api_get_list_place();
       // this.call_api_get_list_place_stop();
@@ -598,6 +599,10 @@ class HomeScreen extends Component {
     this.bs1.current.snapTo(0);
   }
 
+  convertDateGMT(date) {
+    return moment.utc(date).local().format("YYYY-MM-DD HH:mm:ss");
+  }
+
   render() {
     {
       StatusBar.setBackgroundColor(Colors.main);
@@ -646,7 +651,7 @@ class HomeScreen extends Component {
                     <Callout style={styles.callout}>
                       <View style={styles.viewCallout}>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.name_place}</Text>
-                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.creatTimeFormatCar}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.convertDateGMT(this.state.creatTimeFormatCar)}</Text>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speed_car)) / 100 + 'Km/h'}</Text>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Trạng thái: </Text>{this.state.statusCar == true ? "Đang bật" : "Đang tắt"}</Text>
                       </View>
