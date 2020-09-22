@@ -136,8 +136,10 @@ class HomeScreen extends Component {
     if (props.data_get_list_place.error === false) {
       if (props.data_get_list_place.fetching === false && data_get_list_place) {
         if (data_get_list_place.data.success) {
-          this.fitAllMarkers(data_get_list_place.data.data);
-          this.sliderRef._setMaxSlider(data_get_list_place.data.data.length || 1);
+          // if (this.state.tab == 1) {
+            this.fitAllMarkers(data_get_list_place.data.data);
+            this.sliderRef._setMaxSlider(data_get_list_place.data.data.length || 1);
+          // }
         } else {
           this.setState({ dataPlace: [] })
         }
@@ -170,6 +172,10 @@ class HomeScreen extends Component {
   // componentDidUpdate(prevProps, prevState) {
   //   if (this.marker != null)
   //     setTimeout(() => this.marker.showCallout(), 0);
+  //   if (this.state.tab == 2)
+  //     this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000)
+  //   else
+  //     clearInterval(this.timer);
   // }
 
   get_currents_location_1(data) {
@@ -236,18 +242,6 @@ class HomeScreen extends Component {
       //   this.get_currents_location_1(MARKERS[0]);
       // }
     }
-  }
-
-  fitAllMarkersNotRevese(data) {
-    let dataRevese = data;
-    let MARKERS = [];
-    dataRevese.map((marker, index) => {
-      MARKERS.push({ latitude: Number(marker.latitude), longitude: Number(marker.longitude) })
-    })
-    this.map.fitToCoordinates(MARKERS, {
-      edgePadding: DEFAULT_PADDING,
-      animated: true,
-    });
   }
 
   dateStart() {
@@ -596,7 +590,7 @@ class HomeScreen extends Component {
         timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : 'unknown'
       });
       setTimeout(() => { this.marker_car.showCallout() }, 0)
-      this.marker_car.animateMarkerToCoordinate(newCoordinate, 50)
+      this.marker_car.animateMarkerToCoordinate(newCoordinate, 10)
       this.map.animateCamera({ center: newCoordinate }, 10);
     }
   }
@@ -617,7 +611,7 @@ class HomeScreen extends Component {
       // if (this.state.tab == 2)
       //   this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000)
       // else
-      //   clearInterval(this.timmer);
+      //   clearInterval(this.timer);
     }
     return (
       <View style={styles.container}>
@@ -754,7 +748,7 @@ class HomeScreen extends Component {
                   >
                     <Callout style={styles.callout} >
                       <View style={styles.viewCallout}>
-                        <Text style={styles.txtCallout}  ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.data_animatedCamera.namePlace}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.data_animatedCamera.namePlace}</Text>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.data_animatedCamera.creatTimeFormat}</Text>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>{this.state.data_animatedCamera.timeToStop == "unknown" ? 'Tốc độ: ' : 'Thời lượng dừng: '}</Text>{this.state.data_animatedCamera.timeToStop == "unknown" ? this.state.data_animatedCamera.speed : this.state.data_animatedCamera.timeToStop}</Text>
                       </View>
