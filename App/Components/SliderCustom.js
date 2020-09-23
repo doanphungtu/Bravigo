@@ -12,7 +12,6 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export default class SliderCustom extends Component {
     constructor(props) {
-        console.tron.log("aaa", props.max_slider);
         super(props);
         this.interval = null;
         this.state = {

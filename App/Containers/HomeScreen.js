@@ -137,8 +137,8 @@ class HomeScreen extends Component {
       if (props.data_get_list_place.fetching === false && data_get_list_place) {
         if (data_get_list_place.data.success) {
           // if (this.state.tab == 1) {
-            this.fitAllMarkers(data_get_list_place.data.data);
-            this.sliderRef._setMaxSlider(data_get_list_place.data.data.length || 1);
+          this.fitAllMarkers(data_get_list_place.data.data);
+          this.sliderRef._setMaxSlider(data_get_list_place.data.data.length || 1);
           // }
         } else {
           this.setState({ dataPlace: [] })
@@ -164,19 +164,11 @@ class HomeScreen extends Component {
     this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
       this.callAPIGetUserInfor();
       this.call_api_get_list_place_first();
+      this.timer = setInterval(() => { this.call_api_get_list_place_first() }, 10000);
       // this.call_api_get_list_place();
       // this.call_api_get_list_place_stop();
     })
   }
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (this.marker != null)
-  //     setTimeout(() => this.marker.showCallout(), 0);
-  //   if (this.state.tab == 2)
-  //     this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000)
-  //   else
-  //     clearInterval(this.timer);
-  // }
 
   get_currents_location_1(data) {
     if (data) {
@@ -428,6 +420,7 @@ class HomeScreen extends Component {
               title: 'Lịch sử',
               show_direction: true
             });
+            clearInterval(this.timer);
             if (this.state.dataPlace.length) {
               let MARKERS = [];
               this.state.dataPlace.map((marker, index) => {
@@ -460,6 +453,7 @@ class HomeScreen extends Component {
               tab: 3,
               show_direction: false
             });
+            clearInterval(this.timer);
             this.sliderRef._setRunning(false);
             this.callAPIGetUserInfor();
             this.sliderRef._clearInterval();
@@ -555,8 +549,8 @@ class HomeScreen extends Component {
     const token = await AsyncStorage.getItem("token");
     const end = moment(get_current_date() + " 23:59").format('X');
     try {
-      this.props.getCurentLocation(end, "0", idDevice, token);
-      this.callApiGetStatusCar(idDevice);
+      await this.props.getCurentLocation(end, "0", idDevice, token);
+      await this.callApiGetStatusCar(idDevice);
     } catch (e) {
       console.tron.log(e)
     }
@@ -588,10 +582,12 @@ class HomeScreen extends Component {
         creatTimeFormatCar: data[index].creatTimeFormat,
         speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
         timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : 'unknown'
+      }, () => {
+        this.marker_car.hideCallout();
+        this.marker_car.showCallout();
+        this.marker_car.animateMarkerToCoordinate(newCoordinate, 10)
+        this.map.animateCamera({ center: newCoordinate }, 10);
       });
-      setTimeout(() => { this.marker_car.showCallout() }, 0)
-      this.marker_car.animateMarkerToCoordinate(newCoordinate, 10)
-      this.map.animateCamera({ center: newCoordinate }, 10);
     }
   }
 
@@ -608,10 +604,6 @@ class HomeScreen extends Component {
       StatusBar.setBackgroundColor(Colors.main);
       StatusBar.setBarStyle('light-content');
       console.disableYellowBox = true;
-      // if (this.state.tab == 2)
-      //   this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000)
-      // else
-      //   clearInterval(this.timer);
     }
     return (
       <View style={styles.container}>
@@ -804,8 +796,8 @@ class HomeScreen extends Component {
 
         <TouchableOpacity
           style={styles.viewBaoLocation}
-          onPress={() => {
-            this.call_api_get_list_place_first();
+          onPress={async () => {
+            await this.call_api_get_list_place_first();
             this.setState({
               tab: 2,
               title: 'Vị trí hiện tại',
@@ -819,10 +811,13 @@ class HomeScreen extends Component {
                 speed: 0,
                 timeToStop: "unknown"
               }
+            }, () => {
+              this.sliderRef._setRunning(false);
+              this.sliderRef._clearInterval();
+              this.bs1.current.snapTo(0);
             });
-            this.sliderRef._setRunning(false);
-            this.sliderRef._clearInterval();
-            this.bs1.current.snapTo(0);
+            clearInterval(this.timer);
+            this.timer = setInterval(() => { this.call_api_get_list_place_first() }, 10000);
           }}
           activeOpacity={.5}
         >
