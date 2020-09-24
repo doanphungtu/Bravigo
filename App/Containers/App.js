@@ -22,7 +22,7 @@ class App extends Component {
   componentDidMount() {
     setTimeout(() => {
       SplashScreen.hide();
-    }, 150);
+    }, 200);
   }
 
   render () {

@@ -43,6 +43,7 @@ import { get_current_date, get_current_hour } from '../Transforms/Function_Of_Tu
 import SliderCustom from '../Components/SliderCustom';
 import Axios from 'axios';
 import { BASE_URL } from '../Config/UrlConfig';
+import SplashScreen from 'react-native-splash-screen';
 
 const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 const GOOGLE_MAPS_APIKEY = "AIzaSyD_x8kFDvxo9vFvzMMJ98m6u4KfVmI12dY";
@@ -164,7 +165,8 @@ class HomeScreen extends Component {
     this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
       this.callAPIGetUserInfor();
       this.call_api_get_list_place_first();
-      this.timer = setInterval(() => { this.call_api_get_list_place_first() }, 10000);
+      clearInterval(this.timer);
+      this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000);
       // this.call_api_get_list_place();
       // this.call_api_get_list_place_stop();
     })
@@ -201,8 +203,9 @@ class HomeScreen extends Component {
         creatTimeFormatCar: ""
       });
     }
-    if (this.marker != null)
-      setTimeout(() => this.marker.showCallout(), 0);
+    if (this.marker != null) {
+      setTimeout(() => this.marker.showCallout(), 1);
+    }
   }
 
   async callAPIGetUserInfor() {
@@ -314,7 +317,7 @@ class HomeScreen extends Component {
               <Text numberOfLines={1}>{item.namePlace}</Text>
             </View>
             <View style={{ width: '100%' }}>
-              <Text>{item.creatTimeFormat}</Text>
+              <Text>{this.convertDateGMT(item.creatTimeFormat)}</Text>
             </View>
           </View>
           {
@@ -549,8 +552,8 @@ class HomeScreen extends Component {
     const token = await AsyncStorage.getItem("token");
     const end = moment(get_current_date() + " 23:59").format('X');
     try {
-      await this.props.getCurentLocation(end, "0", idDevice, token);
-      await this.callApiGetStatusCar(idDevice);
+      this.props.getCurentLocation(end, "0", idDevice, token);
+      this.callApiGetStatusCar(idDevice);
     } catch (e) {
       console.tron.log(e)
     }
@@ -582,12 +585,12 @@ class HomeScreen extends Component {
         creatTimeFormatCar: data[index].creatTimeFormat,
         speedCar: Math.round(100 * Number.parseFloat(data[index].speed)) / 100 + 'Km/h',
         timeStopCar: this.findPlaceVSPlaceStop(data[index]) != -1 ? (this.state.dataPlaceStop[this.findPlaceVSPlaceStop(data[index])].timeToStop) : 'unknown'
-      }, () => {
-        this.marker_car.hideCallout();
-        this.marker_car.showCallout();
-        this.marker_car.animateMarkerToCoordinate(newCoordinate, 10)
-        this.map.animateCamera({ center: newCoordinate }, 10);
       });
+      setTimeout(() => {
+        this.marker_car.showCallout();
+      }, 0)
+      this.marker_car.animateMarkerToCoordinate(newCoordinate, 10)
+      this.map.animateCamera({ center: newCoordinate }, 10);
     }
   }
 
@@ -604,6 +607,7 @@ class HomeScreen extends Component {
       StatusBar.setBackgroundColor(Colors.main);
       StatusBar.setBarStyle('light-content');
       console.disableYellowBox = true;
+      SplashScreen.hide();
     }
     return (
       <View style={styles.container}>
@@ -630,7 +634,11 @@ class HomeScreen extends Component {
               ref={(ref) => { this.map = ref }}
               style={styles.viewMap}
               initialRegion={this.state.region}
-              onRegionChangeComplete={(region) => this.onRegionChange(region)}
+              onRegionChangeComplete={(region) => {
+                if (this.state.tab == 2) {
+                  this.marker.showCallout()
+                }
+              }}
             >
               {
                 this.state.tab == 2 ?
@@ -661,13 +669,12 @@ class HomeScreen extends Component {
                         latitude: this.state.latitude_car,
                         longitude: this.state.longitude_car
                       }}
-
                     >
                       <Image source={Images.car} style={{ height: 45, width: 45 }} />
-                      <Callout style={styles.callout} >
+                      <Callout style={styles.callout}>
                         <View style={styles.viewCallout}>
                           <Text style={styles.txtCallout} ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.namePlaceCar}</Text>
-                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.creatTimeFormatCar}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.convertDateGMT(this.state.creatTimeFormatCar)}</Text>
                           <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.speedCar)) / 100 + 'Km/h'}</Text>
                         </View>
                       </Callout>
@@ -691,7 +698,7 @@ class HomeScreen extends Component {
                       <Callout style={styles.callout} >
                         <View style={styles.viewCallout}>
                           <Text style={styles.txtCallout} ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.dataPlace[this.state.dataPlace.length - 1].namePlace}</Text>
-                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.convertDateGMT(this.state.dataPlace[this.state.dataPlace.length - 1].creatTimeFormat)}</Text>
                           <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[this.state.dataPlace.length - 1].speed)) / 100 + 'Km/h'}</Text>
                         </View>
                       </Callout>
@@ -711,14 +718,14 @@ class HomeScreen extends Component {
                           latitude: Number(this.state.dataPlace[0].latitude),
                           longitude: Number(this.state.dataPlace[0].longitude)
                         }}
-                        title={this.state.dataPlace[0].namePlace}
-                        description={this.state.dataPlace[0].creatTimeFormat.toString()}
+                      // title={this.state.dataPlace[0].namePlace}
+                      // description={this.state.dataPlace[0].creatTimeFormat.toString()}
                       >
                         <Image source={Images.location_start} style={{ height: 40, width: 40 }} />
                         <Callout style={styles.callout} >
                           <View style={styles.viewCallout}>
                             <Text style={styles.txtCallout} ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.dataPlace[0].namePlace}</Text>
-                            <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.dataPlace[0].creatTimeFormat}</Text>
+                            <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.convertDateGMT(this.state.dataPlace[0].creatTimeFormat)}</Text>
                             <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Tốc độ: </Text>{Math.round(100 * Number.parseFloat(this.state.dataPlace[0].speed)) / 100 + 'Km/h'}</Text>
                           </View>
                         </Callout>
@@ -735,13 +742,13 @@ class HomeScreen extends Component {
                       latitude: Number(this.state.data_animatedCamera.latitude),
                       longitude: Number(this.state.data_animatedCamera.longitude)
                     }}
-                    title={this.state.data_animatedCamera.namePlace}
-                    description={this.state.data_animatedCamera.creatTimeFormat.toString()}
+                  // title={this.state.data_animatedCamera.namePlace}
+                  // description={this.state.data_animatedCamera.creatTimeFormat.toString()}
                   >
                     <Callout style={styles.callout} >
                       <View style={styles.viewCallout}>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{this.state.data_animatedCamera.namePlace}</Text>
-                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.state.data_animatedCamera.creatTimeFormat}</Text>
+                        <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.convertDateGMT(this.state.data_animatedCamera.creatTimeFormat)}</Text>
                         <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>{this.state.data_animatedCamera.timeToStop == "unknown" ? 'Tốc độ: ' : 'Thời lượng dừng: '}</Text>{this.state.data_animatedCamera.timeToStop == "unknown" ? this.state.data_animatedCamera.speed : this.state.data_animatedCamera.timeToStop}</Text>
                       </View>
                     </Callout>
@@ -757,13 +764,13 @@ class HomeScreen extends Component {
                         latitude: Number(marker.latitude),
                         longitude: Number(marker.longitude)
                       }}
-                      description={marker.creatTimeFormat.toString()}
+                    // description={marker.creatTimeFormat.toString()}
                     >
                       <Image source={Images.stop} style={{ height: 15, width: 15 }} />
                       <Callout style={styles.callout}>
                         <View style={styles.viewCallout}>
                           <Text style={styles.txtCallout}  ><Text style={styles.txtCalloutBold}>Địa điểm: </Text>{marker.namePlace}</Text>
-                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{marker.creatTimeFormat}</Text>
+                          <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời gian: </Text>{this.convertDateGMT(marker.creatTimeFormat)}</Text>
                           <Text style={styles.txtCallout}><Text style={styles.txtCalloutBold}>Thời lượng dừng: </Text>{marker.timeToStop}'</Text>
                         </View>
                       </Callout>
@@ -787,6 +794,8 @@ class HomeScreen extends Component {
               activeOpacity={.8}
               onPress={() => {
                 this.call_api_get_list_place_first();
+                clearInterval(this.timer);
+                this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000);
               }}
             >
               <Ionicons name="md-locate" size={20} color="grey" />
@@ -796,8 +805,8 @@ class HomeScreen extends Component {
 
         <TouchableOpacity
           style={styles.viewBaoLocation}
-          onPress={async () => {
-            await this.call_api_get_list_place_first();
+          onPress={() => {
+            this.call_api_get_list_place_first();
             this.setState({
               tab: 2,
               title: 'Vị trí hiện tại',
@@ -811,13 +820,10 @@ class HomeScreen extends Component {
                 speed: 0,
                 timeToStop: "unknown"
               }
-            }, () => {
-              this.sliderRef._setRunning(false);
-              this.sliderRef._clearInterval();
-              this.bs1.current.snapTo(0);
             });
-            clearInterval(this.timer);
-            this.timer = setInterval(() => { this.call_api_get_list_place_first() }, 10000);
+            this.sliderRef._setRunning(false);
+            this.sliderRef._clearInterval();
+            this.bs1.current.snapTo(0);
           }}
           activeOpacity={.5}
         >
