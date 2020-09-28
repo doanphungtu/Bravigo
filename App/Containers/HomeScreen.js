@@ -807,6 +807,8 @@ class HomeScreen extends Component {
           style={styles.viewBaoLocation}
           onPress={() => {
             this.call_api_get_list_place_first();
+            clearInterval(this.timer);
+            this.timer = setInterval(() => this.call_api_get_list_place_first(), 60000);
             this.setState({
               tab: 2,
               title: 'Vị trí hiện tại',
